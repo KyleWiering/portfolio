@@ -3,25 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        #app {
-            font-size: 2em;
-            color: #333;
-        }
-    </style>
+    <meta name="description" content="Modern portfolio showcasing full-stack development projects and skills">
+    <title>Portfolio | Modern Developer</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app"></div>
+    <!-- Header with Navigation -->
+    <header>
+        <!-- Hamburger Menu Button -->
+        <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Navigation Menu -->
+        <nav aria-label="Main navigation">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Overlay -->
+    <div class="overlay" aria-hidden="true"></div>
+
+    <!-- Main Content -->
+    <main class="container">
+        <article class="hero">
+            <section id="home">
+                <h1>Welcome to My Portfolio</h1>
+                <p class="tagline">Full-Stack Developer & Creative Problem Solver</p>
+                <p>Passionate about building elegant solutions to complex problems. Specializing in modern web technologies and creating exceptional user experiences.</p>
+            </section>
+
+            <section id="projects" class="github-section">
+                <h2>GitHub Projects</h2>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="github-link">
+                    <svg class="github-icon" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+                    </svg>
+                    View My GitHub Projects
+                </a>
+            </section>
+
+            <section id="skills">
+                <h2>Skills & Technologies</h2>
+                <div class="skills">
+                    <span class="skill-tag">TypeScript</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">HTML5</span>
+                    <span class="skill-tag">CSS3</span>
+                    <span class="skill-tag">React</span>
+                    <span class="skill-tag">Node.js</span>
+                    <span class="skill-tag">Git</span>
+                    <span class="skill-tag">Responsive Design</span>
+                </div>
+            </section>
+        </article>
+    </main>
+
     <script src="index.js"></script>
 </body>
 </html>
