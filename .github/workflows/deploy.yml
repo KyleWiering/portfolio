@@ -33,8 +33,10 @@ jobs:
       - name: Build TypeScript
         run: npm run build
 
-      - name: Copy HTML to dist
-        run: cp src/index.html dist/index.html
+      - name: Copy static files to dist
+        run: |
+          cp src/index.html dist/index.html
+          cp src/styles.css dist/styles.css
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
