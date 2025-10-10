@@ -36,7 +36,9 @@ jobs:
       - name: Copy static files to dist
         run: |
           cp src/index.html dist/index.html
+          cp src/resume.html dist/resume.html
           cp src/styles.css dist/styles.css
+          cp src/Kyle-Wiering-10-2025.docx dist/Kyle-Wiering-10-2025.docx
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
