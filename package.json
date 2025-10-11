@@ -4,7 +4,8 @@
   "description": "Creating a personal home page.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run build:game",
+    "build:game": "esbuild src/game.ts --bundle --outfile=dist/game.js --format=esm",
     "dev": "tsc --watch"
   },
   "keywords": [
@@ -14,6 +15,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/three": "^0.160.0",
+    "esbuild": "^0.19.11",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
   }
 }

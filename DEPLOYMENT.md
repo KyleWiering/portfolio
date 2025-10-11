@@ -8,9 +8,10 @@ This portfolio site is configured to deploy to GitHub Pages using GitHub Actions
 
 The `.github/workflows/deploy.yml` workflow:
 1. Builds the TypeScript code (`src/index.ts` → `dist/index.js`)
-2. Copies static files (`index.html` and `styles.css`) to the `dist` directory
-3. Uploads the `dist` directory as a Pages artifact
-4. Deploys the artifact to GitHub Pages
+2. Bundles the 3D game application with Three.js (`src/game.ts` → `dist/game.js`)
+3. Copies static files (`index.html`, `game.html`, `resume.html`, and `styles.css`) to the `dist` directory
+4. Uploads the `dist` directory as a Pages artifact
+5. Deploys the artifact to GitHub Pages
 
 ### Ensuring Proper Configuration
 
@@ -36,6 +37,9 @@ The artifact-based deployment (current setup) is the recommended approach as it:
 The following files are deployed to GitHub Pages from the `dist/` directory:
 - `index.html` - Main portfolio page
 - `index.js` - Compiled JavaScript from TypeScript
+- `game.html` - 3D browser game page
+- `game.js` - Bundled 3D game application (includes Three.js)
+- `resume.html` - Resume page
 - `styles.css` - Stylesheet
 
-All paths in `index.html` use relative references (`./styles.css`, `./index.js`) to ensure compatibility with GitHub Pages project sites.
+All paths in HTML files use relative references (`./styles.css`, `./index.js`) to ensure compatibility with GitHub Pages project sites.
