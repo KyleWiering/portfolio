@@ -159,7 +159,7 @@ function initModelViewer(): void {
     displayModel('cube', false);
 
     // Set up model selection buttons
-    const modelButtons = document.querySelectorAll('.model-selector button');
+    const modelButtons = document.querySelectorAll('.menu-section button[data-model]');
     modelButtons.forEach(button => {
         button.addEventListener('click', () => {
             const modelType = button.getAttribute('data-model') as ModelType;
@@ -180,6 +180,37 @@ function initModelViewer(): void {
         textureToggle.addEventListener('change', () => {
             useTexture = textureToggle.checked;
             displayModel(currentModelType, useTexture);
+        });
+    }
+
+    // Set up settings panel toggle
+    const settingsButton = document.getElementById('settings-button');
+    const settingsPanel = document.getElementById('settings-panel');
+    const closeSettingsButton = document.getElementById('close-settings');
+
+    if (settingsButton && settingsPanel) {
+        settingsButton.addEventListener('click', () => {
+            settingsPanel.style.display = 'block';
+        });
+    }
+
+    if (closeSettingsButton && settingsPanel) {
+        closeSettingsButton.addEventListener('click', () => {
+            settingsPanel.style.display = 'none';
+        });
+    }
+
+    // Close settings panel when clicking outside
+    if (settingsPanel) {
+        renderer.domElement.addEventListener('click', (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            // Only close if clicking on the canvas itself, not the settings panel or menu
+            if (!settingsPanel.contains(target) && 
+                !settingsButton?.contains(target) && 
+                settingsPanel.style.display === 'block' &&
+                target === renderer.domElement) {
+                settingsPanel.style.display = 'none';
+            }
         });
     }
 
