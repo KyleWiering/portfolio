@@ -108,6 +108,19 @@ function initModelViewer(): void {
     let currentModel: THREE.Mesh | null = null;
     let currentModelType: ModelType = 'cube';
     let useTexture = false;
+    
+    // Grid movement state
+    let gridPosition = { x: 0, z: 0 }; // Current position on grid
+    const gridSpacing = 1; // Grid cell size
+    const gridBounds = 10; // Half of grid size (20/2)
+
+    // Function to update model position on grid
+    function updateModelPosition(): void {
+        if (currentModel) {
+            currentModel.position.x = gridPosition.x * gridSpacing;
+            currentModel.position.z = gridPosition.z * gridSpacing;
+        }
+    }
 
     // Function to create and display model
     function displayModel(modelType: ModelType, withTexture: boolean): void {
@@ -139,6 +152,7 @@ function initModelViewer(): void {
 
         scene.add(currentModel);
         currentModelType = modelType;
+        updateModelPosition();
     }
 
     // Initialize with cube
@@ -168,6 +182,99 @@ function initModelViewer(): void {
             displayModel(currentModelType, useTexture);
         });
     }
+
+    // Touch controls for mobile navigation
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const swipeThreshold = 50; // Minimum swipe distance in pixels
+
+    renderer.domElement.addEventListener('touchstart', (e: TouchEvent) => {
+        if (e.touches.length === 1) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    renderer.domElement.addEventListener('touchend', (e: TouchEvent) => {
+        if (e.changedTouches.length === 1) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            
+            // Determine swipe direction
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal swipe (left/right)
+                if (Math.abs(deltaX) > swipeThreshold) {
+                    if (deltaX > 0) {
+                        // Swipe right - move right
+                        if (gridPosition.x < gridBounds) {
+                            gridPosition.x += 1;
+                            updateModelPosition();
+                        }
+                    } else {
+                        // Swipe left - move left
+                        if (gridPosition.x > -gridBounds) {
+                            gridPosition.x -= 1;
+                            updateModelPosition();
+                        }
+                    }
+                }
+            } else {
+                // Vertical swipe (back/forth)
+                if (Math.abs(deltaY) > swipeThreshold) {
+                    if (deltaY > 0) {
+                        // Swipe down - move forward (closer)
+                        if (gridPosition.z < gridBounds) {
+                            gridPosition.z += 1;
+                            updateModelPosition();
+                        }
+                    } else {
+                        // Swipe up - move back (away)
+                        if (gridPosition.z > -gridBounds) {
+                            gridPosition.z -= 1;
+                            updateModelPosition();
+                        }
+                    }
+                }
+            }
+        }
+    }, { passive: true });
+
+    // Keyboard controls for desktop (arrow keys)
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+        switch(e.key) {
+            case 'ArrowLeft':
+                if (gridPosition.x > -gridBounds) {
+                    gridPosition.x -= 1;
+                    updateModelPosition();
+                }
+                e.preventDefault();
+                break;
+            case 'ArrowRight':
+                if (gridPosition.x < gridBounds) {
+                    gridPosition.x += 1;
+                    updateModelPosition();
+                }
+                e.preventDefault();
+                break;
+            case 'ArrowUp':
+                if (gridPosition.z > -gridBounds) {
+                    gridPosition.z -= 1;
+                    updateModelPosition();
+                }
+                e.preventDefault();
+                break;
+            case 'ArrowDown':
+                if (gridPosition.z < gridBounds) {
+                    gridPosition.z += 1;
+                    updateModelPosition();
+                }
+                e.preventDefault();
+                break;
+        }
+    });
 
     // Animation loop
     function animate(): void {

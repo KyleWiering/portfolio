@@ -188,6 +188,34 @@
             height: 18px;
             cursor: pointer;
         }
+
+        /* Controls info */
+        .controls-info {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            text-align: center;
+        }
+
+        .controls-info h4 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .controls-info p {
+            margin: 5px 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -219,6 +247,13 @@
 
     <!-- Game Container -->
     <div id="game-container"></div>
+
+    <!-- Controls Info -->
+    <div class="controls-info">
+        <h4>Controls</h4>
+        <p>📱 Mobile: Swipe to move</p>
+        <p>⌨️ Desktop: Arrow keys</p>
+    </div>
 
     <!-- Back to Portfolio Button -->
     <a href="index.html" class="back-button">← Back to Portfolio</a>
