@@ -7,6 +7,62 @@ import { createSphere } from './models/sphere';
 type ModelType = 'pyramid' | 'cube' | 'sphere';
 
 /**
+ * Create an isometric grid with dashed lines
+ */
+function createIsometricGrid(width: number, depth: number, spacing: number): THREE.Group {
+    const gridGroup = new THREE.Group();
+    
+    // Grid configuration
+    const gridColor = 0x808080; // Grey color
+    const opacity = 0.3; // Transparent
+    
+    // Create material for dashed lines
+    const lineMaterial = new THREE.LineDashedMaterial({
+        color: gridColor,
+        transparent: true,
+        opacity: opacity,
+        dashSize: 0.1,
+        gapSize: 0.1,
+        linewidth: 1
+    });
+    
+    const halfWidth = (width * spacing) / 2;
+    const halfDepth = (depth * spacing) / 2;
+    
+    // Create lines parallel to X-axis
+    for (let z = -halfDepth; z <= halfDepth; z += spacing) {
+        const points = [];
+        points.push(new THREE.Vector3(-halfWidth, 0, z));
+        points.push(new THREE.Vector3(halfWidth, 0, z));
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, lineMaterial);
+        line.computeLineDistances(); // Required for dashed lines
+        gridGroup.add(line);
+    }
+    
+    // Create lines parallel to Z-axis
+    for (let x = -halfWidth; x <= halfWidth; x += spacing) {
+        const points = [];
+        points.push(new THREE.Vector3(x, 0, -halfDepth));
+        points.push(new THREE.Vector3(x, 0, halfDepth));
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, lineMaterial);
+        line.computeLineDistances(); // Required for dashed lines
+        gridGroup.add(line);
+    }
+    
+    // Position the grid slightly below the models
+    gridGroup.position.y = -2;
+    
+    // Rotate for isometric view (optional slight rotation for visual effect)
+    gridGroup.rotation.x = 0;
+    
+    return gridGroup;
+}
+
+/**
  * Initialize the 3D model viewer scene
  */
 function initModelViewer(): void {
@@ -19,7 +75,7 @@ function initModelViewer(): void {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0f172a); // Dark blue background
+    scene.background = new THREE.Color(0x000000); // Black background
 
     // Camera setup
     const camera = new THREE.PerspectiveCamera(
@@ -43,6 +99,10 @@ function initModelViewer(): void {
     const pointLight = new THREE.PointLight(0xffffff, 1);
     pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
+
+    // Create isometric grid
+    const gridHelper = createIsometricGrid(20, 20, 1);
+    scene.add(gridHelper);
 
     // State management
     let currentModel: THREE.Mesh | null = null;
