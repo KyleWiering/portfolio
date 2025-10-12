@@ -109,60 +109,70 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
         }
 
-        /* Model selector styles */
-        .model-selector {
-            position: fixed;
-            top: 50%;
-            right: 30px;
-            transform: translateY(-50%);
-            z-index: 100;
+        /* In-WebGL Menu */
+        .webgl-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            min-width: 180px;
         }
 
-        .model-selector h3 {
+        .webgl-menu h3 {
             color: white;
-            font-size: 1rem;
+            font-size: 1.2rem;
             margin: 0 0 15px 0;
             text-align: center;
             font-weight: 600;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
         }
 
-        .model-selector button {
+        .menu-section {
+            margin-bottom: 15px;
+        }
+
+        .menu-section h4 {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin: 0 0 10px 0;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu-section button {
             display: block;
-            width: 140px;
-            padding: 12px 16px;
-            margin-bottom: 10px;
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 8px;
             background: rgba(255, 255, 255, 0.15);
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             color: white;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        .model-selector button:hover {
+        .menu-section button:hover {
             background: rgba(255, 255, 255, 0.25);
             border-color: rgba(255, 255, 255, 0.5);
-            transform: translateX(-3px);
+            transform: translateY(-2px);
         }
 
-        .model-selector button.active {
+        .menu-section button.active {
             background: rgba(37, 99, 235, 0.7);
             border-color: rgba(37, 99, 235, 1);
             box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
-        }
-
-        .model-selector button:last-of-type {
-            margin-bottom: 20px;
         }
 
         .texture-toggle {
@@ -171,8 +181,7 @@
             justify-content: center;
             color: white;
             font-size: 0.85rem;
-            margin-top: 10px;
-            padding-top: 15px;
+            padding-top: 10px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -189,32 +198,108 @@
             cursor: pointer;
         }
 
-        /* Controls info */
-        .controls-info {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 15px 25px;
-            border-radius: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+        .settings-button {
+            width: 100%;
+            padding: 12px 14px;
+            margin-top: 10px;
+            background: rgba(147, 51, 234, 0.3);
+            border: 2px solid rgba(147, 51, 234, 0.5);
+            border-radius: 8px;
             color: white;
-            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        .controls-info h4 {
+        .settings-button:hover {
+            background: rgba(147, 51, 234, 0.5);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(147, 51, 234, 0.3);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .settings-panel h4 {
+            color: white;
+            font-size: 1.3rem;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .settings-content {
+            color: white;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-section h5 {
             margin: 0 0 10px 0;
             font-size: 1rem;
             font-weight: 600;
+            color: rgba(147, 197, 253, 1);
         }
 
-        .controls-info p {
+        .control-section p {
             margin: 5px 0;
             font-size: 0.85rem;
+            line-height: 1.5;
             opacity: 0.9;
+        }
+
+        .control-section p strong {
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .close-settings {
+            width: 100%;
+            padding: 12px 14px;
+            margin-top: 15px;
+            background: rgba(239, 68, 68, 0.3);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-settings:hover {
+            background: rgba(239, 68, 68, 0.5);
+            border-color: rgba(239, 68, 68, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
         }
     </style>
 </head>
@@ -231,28 +316,57 @@
         <p class="game-description">Interactive WebGL model viewer</p>
     </div>
 
-    <!-- Model Selector -->
-    <div class="model-selector">
-        <h3>Select Model</h3>
-        <button data-model="pyramid">🔺 Pyramid</button>
-        <button data-model="cube" class="active">🔲 Cube</button>
-        <button data-model="sphere">🔵 Sphere</button>
-        <div class="texture-toggle">
-            <label>
-                <input type="checkbox" id="texture-toggle">
-                <span>Use Texture</span>
-            </label>
-        </div>
-    </div>
-
     <!-- Game Container -->
-    <div id="game-container"></div>
+    <div id="game-container">
+        <!-- In-WebGL Menu -->
+        <div class="webgl-menu">
+            <h3>Menu</h3>
+            <div class="menu-section">
+                <h4>Models</h4>
+                <button data-model="pyramid">🔺 Pyramid</button>
+                <button data-model="cube" class="active">🔲 Cube</button>
+                <button data-model="sphere">🔵 Sphere</button>
+            </div>
+            <div class="menu-section">
+                <div class="texture-toggle">
+                    <label>
+                        <input type="checkbox" id="texture-toggle">
+                        <span>Use Texture</span>
+                    </label>
+                </div>
+            </div>
+            <button class="settings-button" id="settings-button">⚙️ Settings</button>
+        </div>
 
-    <!-- Controls Info -->
-    <div class="controls-info">
-        <h4>Controls</h4>
-        <p>📱 Mobile: Swipe to move</p>
-        <p>⌨️ Desktop: Arrow keys</p>
+        <!-- Settings Panel (hidden by default) -->
+        <div class="settings-panel" id="settings-panel" style="display: none;">
+            <h4>Controls & Settings</h4>
+            <div class="settings-content">
+                <div class="control-section">
+                    <h5>🎮 Navigation Controls</h5>
+                    <p><strong>Desktop:</strong> Use Arrow Keys</p>
+                    <p>⬆️ Arrow Up - Move Forward (decrease Z)</p>
+                    <p>⬇️ Arrow Down - Move Backward (increase Z)</p>
+                    <p>⬅️ Arrow Left - Move Left (decrease X)</p>
+                    <p>➡️ Arrow Right - Move Right (increase X)</p>
+                </div>
+                <div class="control-section">
+                    <h5>📱 Mobile Controls</h5>
+                    <p><strong>Touch:</strong> Swipe to Move</p>
+                    <p>Swipe Up - Move Forward</p>
+                    <p>Swipe Down - Move Backward</p>
+                    <p>Swipe Left - Move Left</p>
+                    <p>Swipe Right - Move Right</p>
+                </div>
+                <div class="control-section">
+                    <h5>ℹ️ Grid Information</h5>
+                    <p>Grid Size: 20x20 units</p>
+                    <p>Movement: 1 unit per step</p>
+                    <p>Bounds: ±10 units from center</p>
+                </div>
+            </div>
+            <button class="close-settings" id="close-settings">✕ Close</button>
+        </div>
     </div>
 
     <!-- Back to Portfolio Button -->
