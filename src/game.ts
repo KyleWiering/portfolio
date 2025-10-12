@@ -1,10 +1,15 @@
-// 3D Browser Game - Spinning Cube Loader
+// 3D Model Viewer
 import * as THREE from 'three';
+import { createPyramid } from './models/pyramid';
+import { createCube } from './models/cube';
+import { createSphere } from './models/sphere';
+
+type ModelType = 'pyramid' | 'cube' | 'sphere';
 
 /**
- * Initialize the 3D cube scene
+ * Initialize the 3D model viewer scene
  */
-function initCubeScene(): void {
+function initModelViewer(): void {
     const container = document.getElementById('game-container');
     
     if (!container) {
@@ -31,37 +36,88 @@ function initCubeScene(): void {
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    // Create the spinning cube
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
-    
-    // Create gradient-like material using multiple colors
-    const materials = [
-        new THREE.MeshBasicMaterial({ color: 0x2563eb }), // Blue
-        new THREE.MeshBasicMaterial({ color: 0x7c3aed }), // Purple
-        new THREE.MeshBasicMaterial({ color: 0xdb2777 }), // Pink
-        new THREE.MeshBasicMaterial({ color: 0xf59e0b }), // Amber
-        new THREE.MeshBasicMaterial({ color: 0x10b981 }), // Green
-        new THREE.MeshBasicMaterial({ color: 0x06b6d4 })  // Cyan
-    ];
-    
-    const cube = new THREE.Mesh(geometry, materials);
-    scene.add(cube);
-
     // Add lighting for better visual effect
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
     const pointLight = new THREE.PointLight(0xffffff, 1);
     pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
 
+    // State management
+    let currentModel: THREE.Mesh | null = null;
+    let currentModelType: ModelType = 'cube';
+    let useTexture = false;
+
+    // Function to create and display model
+    function displayModel(modelType: ModelType, withTexture: boolean): void {
+        // Remove current model if exists
+        if (currentModel) {
+            scene.remove(currentModel);
+            currentModel.geometry.dispose();
+            if (Array.isArray(currentModel.material)) {
+                currentModel.material.forEach((m: THREE.Material) => m.dispose());
+            } else {
+                currentModel.material.dispose();
+            }
+        }
+
+        // Create new model based on type
+        const config = { useTexture: withTexture, color: undefined };
+        
+        switch (modelType) {
+            case 'pyramid':
+                currentModel = createPyramid(config);
+                break;
+            case 'cube':
+                currentModel = createCube(config);
+                break;
+            case 'sphere':
+                currentModel = createSphere(config);
+                break;
+        }
+
+        scene.add(currentModel);
+        currentModelType = modelType;
+    }
+
+    // Initialize with cube
+    displayModel('cube', false);
+
+    // Set up model selection buttons
+    const modelButtons = document.querySelectorAll('.model-selector button');
+    modelButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modelType = button.getAttribute('data-model') as ModelType;
+            if (modelType) {
+                // Update active state
+                modelButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Display selected model
+                displayModel(modelType, useTexture);
+            }
+        });
+    });
+
+    // Set up texture toggle
+    const textureToggle = document.getElementById('texture-toggle') as HTMLInputElement;
+    if (textureToggle) {
+        textureToggle.addEventListener('change', () => {
+            useTexture = textureToggle.checked;
+            displayModel(currentModelType, useTexture);
+        });
+    }
+
     // Animation loop
     function animate(): void {
         requestAnimationFrame(animate);
 
-        // Rotate the cube
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
+        // Rotate the model
+        if (currentModel) {
+            currentModel.rotation.x += 0.01;
+            currentModel.rotation.y += 0.01;
+        }
 
         renderer.render(scene, camera);
     }
@@ -92,7 +148,7 @@ function initCubeScene(): void {
 
 // Initialize when DOM is loaded
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initCubeScene);
+    document.addEventListener("DOMContentLoaded", initModelViewer);
 } else {
-    initCubeScene();
+    initModelViewer();
 }

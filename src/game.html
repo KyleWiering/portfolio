@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="3D Browser Game - Spinning Cube">
-    <title>3D Game | Kyle Wiering</title>
+    <meta name="description" content="3D Model Viewer - Interactive WebGL Demo">
+    <title>3D Model Viewer | Kyle Wiering</title>
     <link rel="stylesheet" href="./styles.css">
     <style>
         /* Game-specific styles */
@@ -108,6 +108,86 @@
             transform: translateX(-50%) translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
         }
+
+        /* Model selector styles */
+        .model-selector {
+            position: fixed;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .model-selector h3 {
+            color: white;
+            font-size: 1rem;
+            margin: 0 0 15px 0;
+            text-align: center;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .model-selector button {
+            display: block;
+            width: 140px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .model-selector button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(-3px);
+        }
+
+        .model-selector button.active {
+            background: rgba(37, 99, 235, 0.7);
+            border-color: rgba(37, 99, 235, 1);
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+        }
+
+        .model-selector button:last-of-type {
+            margin-bottom: 20px;
+        }
+
+        .texture-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .texture-toggle label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .texture-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -119,8 +199,22 @@
 
     <!-- Game UI -->
     <div class="game-ui">
-        <h1 class="game-title">3D Spinning Cube</h1>
-        <p class="game-description">A WebGL-powered interactive demo</p>
+        <h1 class="game-title">3D Model Viewer</h1>
+        <p class="game-description">Interactive WebGL model viewer</p>
+    </div>
+
+    <!-- Model Selector -->
+    <div class="model-selector">
+        <h3>Select Model</h3>
+        <button data-model="pyramid">🔺 Pyramid</button>
+        <button data-model="cube" class="active">🔲 Cube</button>
+        <button data-model="sphere">🔵 Sphere</button>
+        <div class="texture-toggle">
+            <label>
+                <input type="checkbox" id="texture-toggle">
+                <span>Use Texture</span>
+            </label>
+        </div>
     </div>
 
     <!-- Game Container -->
