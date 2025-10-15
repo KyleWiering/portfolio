@@ -2,9 +2,11 @@
 // Separation of Concerns:
 // - SceneRenderer: Handles WebGL scene setup and rendering
 // - ModelManager: Manages model lifecycle and grid positioning
+// - InputController: Handles keyboard and touch input
 
 import { SceneRenderer } from './rendering/sceneRenderer';
 import { ModelManager } from './managers/modelManager';
+import { InputController } from './controllers/inputController';
 
 /**
  * Initialize the 3D model viewer application
@@ -16,12 +18,25 @@ function initModelViewer(): void {
     // Initialize model manager (handles model creation and positioning)
     const modelManager = new ModelManager(renderer.getScene());
     
+    // Initialize input controller (handles keyboard and touch input)
+    const inputController = new InputController(renderer.getCanvas());
+    
+    // Set up input callbacks
+    inputController.onMovement((direction) => {
+        modelManager.moveSelectedModel(direction);
+        updateSelectedModelDisplay();
+    });
+    
+    // Initialize input controller
+    inputController.initialize();
+    
     // Set up texture toggle functionality
     const textureToggle = document.getElementById('texture-toggle') as HTMLInputElement;
     if (textureToggle) {
         textureToggle.addEventListener('change', (e) => {
             const useTexture = (e.target as HTMLInputElement).checked;
             modelManager.displayAllModels(useTexture);
+            updateSelectedModelDisplay();
         });
     }
 
@@ -41,9 +56,43 @@ function initModelViewer(): void {
             settingsPanel.style.display = 'none';
         });
     }
+
+    // Set up model selection buttons
+    const prevModelButton = document.getElementById('prev-model');
+    const nextModelButton = document.getElementById('next-model');
+
+    if (prevModelButton) {
+        prevModelButton.addEventListener('click', () => {
+            modelManager.selectPreviousModel();
+            updateSelectedModelDisplay();
+        });
+    }
+
+    if (nextModelButton) {
+        nextModelButton.addEventListener('click', () => {
+            modelManager.selectNextModel();
+            updateSelectedModelDisplay();
+        });
+    }
+
+    // Function to update the selected model display
+    function updateSelectedModelDisplay(): void {
+        const selectedModelText = document.getElementById('selected-model-text');
+        if (selectedModelText) {
+            const modelType = modelManager.getSelectedModelType();
+            const icons = {
+                'pyramid': '🔺',
+                'cube': '🔲',
+                'sphere': '🔵'
+            };
+            const modelName = modelType.charAt(0).toUpperCase() + modelType.slice(1);
+            selectedModelText.textContent = `${icons[modelType]} ${modelName}`;
+        }
+    }
     
     // Display all models (pyramid, cube, sphere) on the grid
     modelManager.displayAllModels(false);
+    updateSelectedModelDisplay();
 
     // Animation loop
     function animate(): void {

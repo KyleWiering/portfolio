@@ -14,6 +14,7 @@ export interface GridPosition {
 interface ModelInfo {
     mesh: THREE.Mesh;
     type: ModelType;
+    gridPosition: GridPosition;
 }
 
 /**
@@ -22,7 +23,9 @@ interface ModelInfo {
 export class ModelManager {
     private scene: THREE.Scene;
     private models: ModelInfo[] = [];
+    private selectedModelIndex: number = 0; // Track which model is selected
     private gridSpacing: number = 1;
+    private gridBounds: number = 10;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -39,24 +42,31 @@ export class ModelManager {
         
         // Create pyramid at position (-3, 0)
         const pyramid = createPyramid(config);
-        pyramid.position.x = -3 * this.gridSpacing;
-        pyramid.position.z = 0 * this.gridSpacing;
+        const pyramidPos = { x: -3, z: 0 };
+        pyramid.position.x = pyramidPos.x * this.gridSpacing;
+        pyramid.position.z = pyramidPos.z * this.gridSpacing;
         this.scene.add(pyramid);
-        this.models.push({ mesh: pyramid, type: 'pyramid' });
+        this.models.push({ mesh: pyramid, type: 'pyramid', gridPosition: pyramidPos });
 
         // Create cube at position (0, 0) - center
         const cube = createCube(config);
-        cube.position.x = 0 * this.gridSpacing;
-        cube.position.z = 0 * this.gridSpacing;
+        const cubePos = { x: 0, z: 0 };
+        cube.position.x = cubePos.x * this.gridSpacing;
+        cube.position.z = cubePos.z * this.gridSpacing;
         this.scene.add(cube);
-        this.models.push({ mesh: cube, type: 'cube' });
+        this.models.push({ mesh: cube, type: 'cube', gridPosition: cubePos });
 
         // Create sphere at position (3, 0)
         const sphere = createSphere(config);
-        sphere.position.x = 3 * this.gridSpacing;
-        sphere.position.z = 0 * this.gridSpacing;
+        const spherePos = { x: 3, z: 0 };
+        sphere.position.x = spherePos.x * this.gridSpacing;
+        sphere.position.z = spherePos.z * this.gridSpacing;
         this.scene.add(sphere);
-        this.models.push({ mesh: sphere, type: 'sphere' });
+        this.models.push({ mesh: sphere, type: 'sphere', gridPosition: spherePos });
+
+        // Select the first model by default
+        this.selectedModelIndex = 0;
+        this.updateSelectedModelHighlight();
     }
 
     /**
@@ -83,5 +93,85 @@ export class ModelManager {
             modelInfo.mesh.rotation.x += 0.01;
             modelInfo.mesh.rotation.y += 0.01;
         });
+    }
+
+    /**
+     * Select the next model (cycle through models)
+     */
+    public selectNextModel(): void {
+        this.selectedModelIndex = (this.selectedModelIndex + 1) % this.models.length;
+        this.updateSelectedModelHighlight();
+    }
+
+    /**
+     * Select the previous model (cycle through models)
+     */
+    public selectPreviousModel(): void {
+        this.selectedModelIndex = (this.selectedModelIndex - 1 + this.models.length) % this.models.length;
+        this.updateSelectedModelHighlight();
+    }
+
+    /**
+     * Move the currently selected model on the grid
+     */
+    public moveSelectedModel(direction: 'left' | 'right' | 'forward' | 'backward'): void {
+        if (this.models.length === 0) return;
+
+        const selectedModel = this.models[this.selectedModelIndex];
+        
+        switch (direction) {
+            case 'left':
+                if (selectedModel.gridPosition.x > -this.gridBounds) {
+                    selectedModel.gridPosition.x -= 1;
+                }
+                break;
+            case 'right':
+                if (selectedModel.gridPosition.x < this.gridBounds) {
+                    selectedModel.gridPosition.x += 1;
+                }
+                break;
+            case 'forward':
+                if (selectedModel.gridPosition.z > -this.gridBounds) {
+                    selectedModel.gridPosition.z -= 1;
+                }
+                break;
+            case 'backward':
+                if (selectedModel.gridPosition.z < this.gridBounds) {
+                    selectedModel.gridPosition.z += 1;
+                }
+                break;
+        }
+        
+        this.updateModelPosition(selectedModel);
+    }
+
+    /**
+     * Update model position based on grid position
+     */
+    private updateModelPosition(modelInfo: ModelInfo): void {
+        modelInfo.mesh.position.x = modelInfo.gridPosition.x * this.gridSpacing;
+        modelInfo.mesh.position.z = modelInfo.gridPosition.z * this.gridSpacing;
+    }
+
+    /**
+     * Update visual highlight for selected model
+     */
+    private updateSelectedModelHighlight(): void {
+        this.models.forEach((modelInfo, index) => {
+            if (index === this.selectedModelIndex) {
+                // Scale up the selected model slightly
+                modelInfo.mesh.scale.set(1.2, 1.2, 1.2);
+            } else {
+                // Reset scale for non-selected models
+                modelInfo.mesh.scale.set(1, 1, 1);
+            }
+        });
+    }
+
+    /**
+     * Get the currently selected model type
+     */
+    public getSelectedModelType(): ModelType {
+        return this.models[this.selectedModelIndex]?.type || 'cube';
     }
 }
