@@ -2,14 +2,9 @@
 // Separation of Concerns:
 // - SceneRenderer: Handles WebGL scene setup and rendering
 // - ModelManager: Manages model lifecycle and grid positioning
-// - MenuController: Handles menu UI interactions
-// - InputController: Handles keyboard and touch input
 
 import { SceneRenderer } from './rendering/sceneRenderer';
 import { ModelManager } from './managers/modelManager';
-import { MenuController } from './ui/menu';
-import { InputController } from './controllers/inputController';
-import type { ModelType } from './managers/modelManager';
 
 /**
  * Initialize the 3D model viewer application
@@ -21,41 +16,41 @@ function initModelViewer(): void {
     // Initialize model manager (handles model creation and positioning)
     const modelManager = new ModelManager(renderer.getScene());
     
-    // Initialize menu controller (handles UI interactions)
-    const menuController = new MenuController();
+    // Set up texture toggle functionality
+    const textureToggle = document.getElementById('texture-toggle') as HTMLInputElement;
+    if (textureToggle) {
+        textureToggle.addEventListener('change', (e) => {
+            const useTexture = (e.target as HTMLInputElement).checked;
+            modelManager.displayAllModels(useTexture);
+        });
+    }
+
+    // Set up settings panel
+    const settingsButton = document.getElementById('settings-button');
+    const settingsPanel = document.getElementById('settings-panel');
+    const closeSettingsButton = document.getElementById('close-settings');
+
+    if (settingsButton && settingsPanel) {
+        settingsButton.addEventListener('click', () => {
+            settingsPanel.style.display = 'block';
+        });
+    }
+
+    if (closeSettingsButton && settingsPanel) {
+        closeSettingsButton.addEventListener('click', () => {
+            settingsPanel.style.display = 'none';
+        });
+    }
     
-    // Initialize input controller (handles keyboard and touch input)
-    const inputController = new InputController(renderer.getCanvas());
-    
-    // Set up menu callbacks
-    menuController.onModelChange((modelType: string) => {
-        modelManager.displayModel(modelType as ModelType, modelManager.isUsingTexture());
-    });
-    
-    menuController.onTextureChange((useTexture: boolean) => {
-        modelManager.displayModel(modelManager.getCurrentModelType(), useTexture);
-    });
-    
-    // Set up input callbacks
-    inputController.onMovement((direction) => {
-        modelManager.moveModel(direction);
-    });
-    
-    // Initialize all controllers
-    menuController.initialize();
-    inputController.initialize();
-    menuController.registerCanvasClickHandler(renderer.getCanvas());
-    
-    // Initialize with default model (cube)
-    modelManager.displayModel('cube', false);
-    menuController.setActiveModel('cube');
+    // Display all models (pyramid, cube, sphere) on the grid
+    modelManager.displayAllModels(false);
 
     // Animation loop
     function animate(): void {
         requestAnimationFrame(animate);
         
-        // Rotate the current model
-        modelManager.rotateModel();
+        // Rotate all models
+        modelManager.rotateModels();
         
         // Render the scene
         renderer.render();

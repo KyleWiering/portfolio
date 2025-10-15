@@ -11,125 +11,77 @@ export interface GridPosition {
     z: number;
 }
 
+interface ModelInfo {
+    mesh: THREE.Mesh;
+    type: ModelType;
+}
+
 /**
  * ModelManager - Manages 3D model lifecycle and grid positioning
  */
 export class ModelManager {
     private scene: THREE.Scene;
-    private currentModel: THREE.Mesh | null = null;
-    private currentModelType: ModelType = 'cube';
-    private useTexture: boolean = false;
-    private gridPosition: GridPosition = { x: 0, z: 0 };
+    private models: ModelInfo[] = [];
     private gridSpacing: number = 1;
-    private gridBounds: number = 10;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
     }
 
     /**
-     * Display a specific model
+     * Display all models on the grid at distinct positions
      */
-    public displayModel(modelType: ModelType, withTexture: boolean): void {
-        // Remove current model if exists
-        this.removeCurrentModel();
+    public displayAllModels(withTexture: boolean): void {
+        // Remove any existing models
+        this.removeAllModels();
 
-        // Create new model based on type
         const config = { useTexture: withTexture, color: undefined };
         
-        switch (modelType) {
-            case 'pyramid':
-                this.currentModel = createPyramid(config);
-                break;
-            case 'cube':
-                this.currentModel = createCube(config);
-                break;
-            case 'sphere':
-                this.currentModel = createSphere(config);
-                break;
-        }
+        // Create pyramid at position (-3, 0)
+        const pyramid = createPyramid(config);
+        pyramid.position.x = -3 * this.gridSpacing;
+        pyramid.position.z = 0 * this.gridSpacing;
+        this.scene.add(pyramid);
+        this.models.push({ mesh: pyramid, type: 'pyramid' });
 
-        this.scene.add(this.currentModel);
-        this.currentModelType = modelType;
-        this.useTexture = withTexture;
-        this.updateModelPosition();
+        // Create cube at position (0, 0) - center
+        const cube = createCube(config);
+        cube.position.x = 0 * this.gridSpacing;
+        cube.position.z = 0 * this.gridSpacing;
+        this.scene.add(cube);
+        this.models.push({ mesh: cube, type: 'cube' });
+
+        // Create sphere at position (3, 0)
+        const sphere = createSphere(config);
+        sphere.position.x = 3 * this.gridSpacing;
+        sphere.position.z = 0 * this.gridSpacing;
+        this.scene.add(sphere);
+        this.models.push({ mesh: sphere, type: 'sphere' });
     }
 
     /**
-     * Remove current model from scene
+     * Remove all models from scene
      */
-    private removeCurrentModel(): void {
-        if (this.currentModel) {
-            this.scene.remove(this.currentModel);
-            this.currentModel.geometry.dispose();
-            if (Array.isArray(this.currentModel.material)) {
-                this.currentModel.material.forEach((m: THREE.Material) => m.dispose());
+    private removeAllModels(): void {
+        this.models.forEach(modelInfo => {
+            this.scene.remove(modelInfo.mesh);
+            modelInfo.mesh.geometry.dispose();
+            if (Array.isArray(modelInfo.mesh.material)) {
+                modelInfo.mesh.material.forEach((m: THREE.Material) => m.dispose());
             } else {
-                this.currentModel.material.dispose();
+                modelInfo.mesh.material.dispose();
             }
-        }
+        });
+        this.models = [];
     }
 
     /**
-     * Update model position on grid
+     * Rotate all models in animation loop
      */
-    private updateModelPosition(): void {
-        if (this.currentModel) {
-            this.currentModel.position.x = this.gridPosition.x * this.gridSpacing;
-            this.currentModel.position.z = this.gridPosition.z * this.gridSpacing;
-        }
-    }
-
-    /**
-     * Move model on grid
-     */
-    public moveModel(direction: 'left' | 'right' | 'forward' | 'backward'): void {
-        switch (direction) {
-            case 'left':
-                if (this.gridPosition.x > -this.gridBounds) {
-                    this.gridPosition.x -= 1;
-                }
-                break;
-            case 'right':
-                if (this.gridPosition.x < this.gridBounds) {
-                    this.gridPosition.x += 1;
-                }
-                break;
-            case 'forward':
-                if (this.gridPosition.z > -this.gridBounds) {
-                    this.gridPosition.z -= 1;
-                }
-                break;
-            case 'backward':
-                if (this.gridPosition.z < this.gridBounds) {
-                    this.gridPosition.z += 1;
-                }
-                break;
-        }
-        this.updateModelPosition();
-    }
-
-    /**
-     * Rotate model in animation loop
-     */
-    public rotateModel(): void {
-        if (this.currentModel) {
-            this.currentModel.rotation.x += 0.01;
-            this.currentModel.rotation.y += 0.01;
-        }
-    }
-
-    /**
-     * Get current model type
-     */
-    public getCurrentModelType(): ModelType {
-        return this.currentModelType;
-    }
-
-    /**
-     * Get current texture state
-     */
-    public isUsingTexture(): boolean {
-        return this.useTexture;
+    public rotateModels(): void {
+        this.models.forEach(modelInfo => {
+            modelInfo.mesh.rotation.x += 0.01;
+            modelInfo.mesh.rotation.y += 0.01;
+        });
     }
 }
