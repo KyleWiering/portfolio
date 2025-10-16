@@ -146,4 +146,11 @@ export class SceneRenderer {
     public getCanvas(): HTMLCanvasElement {
         return this.renderer.domElement;
     }
+
+    /**
+     * Get the camera
+     */
+    public getCamera(): THREE.PerspectiveCamera {
+        return this.camera;
+    }
 }

@@ -4,6 +4,7 @@
 // - ModelManager: Manages model lifecycle and grid positioning
 // - InputController: Handles keyboard and touch input
 
+import * as THREE from 'three';
 import { SceneRenderer } from './rendering/sceneRenderer';
 import { ModelManager } from './managers/modelManager';
 import { InputController } from './controllers/inputController';
@@ -24,6 +25,42 @@ function initModelViewer(): void {
     // Set up input callbacks
     inputController.onMovement((direction) => {
         modelManager.moveSelectedModel(direction);
+        updateSelectedModelDisplay();
+    });
+    
+    // Set up tap event for model selection via raycasting
+    inputController.onTapEvent((x: number, y: number) => {
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        // Convert screen coordinates to normalized device coordinates (-1 to +1)
+        const canvas = renderer.getCanvas();
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = ((x - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((y - rect.top) / rect.height) * 2 + 1;
+        
+        // Update the raycaster with the camera and mouse position
+        raycaster.setFromCamera(mouse, renderer.getCamera());
+        
+        // Get all model meshes for raycasting
+        const modelMeshes = modelManager.getModelMeshes();
+        
+        // Check for intersections
+        const intersects = raycaster.intersectObjects(modelMeshes);
+        
+        if (intersects.length > 0) {
+            // Find the index of the intersected model
+            const intersectedMesh = intersects[0].object;
+            const modelIndex = modelMeshes.indexOf(intersectedMesh as THREE.Mesh);
+            
+            if (modelIndex !== -1) {
+                modelManager.selectModelByIndex(modelIndex);
+            }
+        }
+    });
+    
+    // Set up model selection callback
+    modelManager.onSelect((modelType) => {
         updateSelectedModelDisplay();
     });
     
@@ -64,14 +101,12 @@ function initModelViewer(): void {
     if (prevModelButton) {
         prevModelButton.addEventListener('click', () => {
             modelManager.selectPreviousModel();
-            updateSelectedModelDisplay();
         });
     }
 
     if (nextModelButton) {
         nextModelButton.addEventListener('click', () => {
             modelManager.selectNextModel();
-            updateSelectedModelDisplay();
         });
     }
 
