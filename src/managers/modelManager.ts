@@ -26,6 +26,7 @@ export class ModelManager {
     private selectedModelIndex: number = 0; // Track which model is selected
     private gridSpacing: number = 1;
     private gridBounds: number = 10;
+    private onSelectCallback?: (modelType: ModelType) => void;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -101,6 +102,9 @@ export class ModelManager {
     public selectNextModel(): void {
         this.selectedModelIndex = (this.selectedModelIndex + 1) % this.models.length;
         this.updateSelectedModelHighlight();
+        if (this.onSelectCallback) {
+            this.onSelectCallback(this.models[this.selectedModelIndex].type);
+        }
     }
 
     /**
@@ -109,6 +113,9 @@ export class ModelManager {
     public selectPreviousModel(): void {
         this.selectedModelIndex = (this.selectedModelIndex - 1 + this.models.length) % this.models.length;
         this.updateSelectedModelHighlight();
+        if (this.onSelectCallback) {
+            this.onSelectCallback(this.models[this.selectedModelIndex].type);
+        }
     }
 
     /**
@@ -173,5 +180,32 @@ export class ModelManager {
      */
     public getSelectedModelType(): ModelType {
         return this.models[this.selectedModelIndex]?.type || 'cube';
+    }
+
+    /**
+     * Set callback for model selection
+     */
+    public onSelect(callback: (modelType: ModelType) => void): void {
+        this.onSelectCallback = callback;
+    }
+
+    /**
+     * Select a model by index
+     */
+    public selectModelByIndex(index: number): void {
+        if (index >= 0 && index < this.models.length) {
+            this.selectedModelIndex = index;
+            this.updateSelectedModelHighlight();
+            if (this.onSelectCallback) {
+                this.onSelectCallback(this.models[this.selectedModelIndex].type);
+            }
+        }
+    }
+
+    /**
+     * Get all model meshes for raycasting
+     */
+    public getModelMeshes(): THREE.Mesh[] {
+        return this.models.map(modelInfo => modelInfo.mesh);
     }
 }
