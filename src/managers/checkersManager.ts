@@ -118,7 +118,7 @@ export class CheckersManager {
         // No need to multiply by gridSpacing since positions are already in world units
         pyramid.position.x = gridPosition.x;
         pyramid.position.z = gridPosition.z;
-        pyramid.position.y = 0; // On the grid
+        pyramid.position.y = -1.9; // On the board (same level as checkerboard plane)
         
         // Add to scene
         this.scene.add(pyramid);
@@ -193,7 +193,7 @@ export class CheckersManager {
             // Show selection indicator above the piece
             if (this.selectionIndicator) {
                 this.selectionIndicator.position.x = piece.mesh.position.x;
-                this.selectionIndicator.position.y = piece.mesh.position.y + 1.5;
+                this.selectionIndicator.position.y = piece.mesh.position.y + 1.0;
                 this.selectionIndicator.position.z = piece.mesh.position.z;
                 this.selectionIndicator.visible = true;
             }

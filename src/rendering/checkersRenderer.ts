@@ -110,9 +110,9 @@ export class CheckersRenderer {
         );
         
         // Position camera above the grid, looking down
-        // Using isometric-like angle but from above
-        this.camera.position.set(0, 12, 8);
-        this.camera.lookAt(0, 0, 0);
+        // Using isometric-like angle but from above - zoomed in closer
+        this.camera.position.set(0, 10, 5);
+        this.camera.lookAt(0, -1, 0);
 
         // Renderer setup
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
