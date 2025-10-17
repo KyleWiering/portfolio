@@ -399,13 +399,6 @@ export class CheckersManager {
                 );
                 
                 if (!alreadyCaptured) {
-                    // Only allow backward jumps for kings or when capturing
-                    const isBackward = piece.color === 'black' ? dir.z < 0 : dir.z > 0;
-                    if (!piece.isKing && isBackward && capturedSoFar.length === 0) {
-                        // Regular pieces can't move backward except when jumping
-                        continue;
-                    }
-
                     const newCaptured = [...capturedSoFar, jumpOverPos];
                     
                     // Check for continued jumps
@@ -445,7 +438,7 @@ export class CheckersManager {
 
         // Check if must capture
         if (this.mustCaptureFrom.length > 0 && !this.mustCaptureFrom.includes(this.selectedPieceIndex)) {
-            return { success: false, message: "Must capture with the other piece" };
+            return { success: false, message: "You must continue capturing with the same piece." };
         }
 
         // Calculate move

@@ -55,9 +55,9 @@ function initCheckers(): void {
                 const intersectPoint = new THREE.Vector3();
                 raycaster.ray.intersectPlane(boardPlane, intersectPoint);
                 
-                // Round to nearest grid position
-                const gridX = Math.round(intersectPoint.x);
-                const gridZ = Math.round(intersectPoint.z);
+                // Snap to nearest half-integer grid position and clamp to board bounds
+                const gridX = Math.max(-3.5, Math.min(3.5, Math.round(intersectPoint.x - 0.5) + 0.5));
+                const gridZ = Math.max(-3.5, Math.min(3.5, Math.round(intersectPoint.z - 0.5) + 0.5));
                 
                 // Attempt to move piece
                 const result = checkersManager.movePiece({ x: gridX, z: gridZ });
