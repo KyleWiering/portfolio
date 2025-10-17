@@ -75,3 +75,28 @@ export function createCheckeredTexture(): THREE.Texture {
     texture.wrapT = THREE.RepeatWrapping;
     return texture;
 }
+
+/**
+ * Create a black and white checkerboard texture for the game board
+ */
+export function createCheckerboardTexture(): THREE.Texture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext('2d')!;
+    
+    // Create an 8x8 checkerboard pattern (standard checkers board)
+    const tileSize = 64; // 512/8 = 64 pixels per square
+    for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+            const isEven = (x + y) % 2 === 0;
+            context.fillStyle = isEven ? '#ffffff' : '#000000';
+            context.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        }
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
+}

@@ -43,30 +43,42 @@ export class CheckersManager {
 
     /**
      * Initialize the checkers board with pieces
-     * Two rows of black pyramids on the left
-     * Two rows of white pyramids on the right
+     * Standard checkers setup: 12 pieces per side on dark squares
+     * Black pieces start at the top (negative z), white at bottom (positive z)
      */
     public initializeBoard(): void {
         // Remove any existing pieces
         this.removeAllPieces();
 
-        // Create black pyramids on the left side (vertical columns)
-        // Two columns: x = -4, -3
-        const blackPositions: GridPosition[] = [
-            // First column (leftmost)
-            { x: -4, z: -3 }, { x: -4, z: -2 }, { x: -4, z: -1 }, { x: -4, z: 0 },
-            // Second column
-            { x: -3, z: -3 }, { x: -3, z: -2 }, { x: -3, z: -1 }, { x: -3, z: 0 },
-        ];
+        // Standard checkers board is 8x8, with pieces on dark squares only
+        // The board spans from -4 to 4 in both x and z directions (centered at origin)
+        // Dark squares are where (x + z) is odd
+        
+        // Black pieces: Top 3 rows (z = -3.5, -2.5, -1.5)
+        const blackPositions: GridPosition[] = [];
+        for (let row = 0; row < 3; row++) {
+            const z = -3.5 + row; // Start from -3.5
+            for (let col = 0; col < 8; col++) {
+                const x = -3.5 + col; // From -3.5 to 3.5
+                // Only place on dark squares (where x + z is odd)
+                if ((col + row) % 2 === 1) {
+                    blackPositions.push({ x, z });
+                }
+            }
+        }
 
-        // Create white pyramids on the right side (vertical columns)
-        // Two columns: x = 3, 4
-        const whitePositions: GridPosition[] = [
-            // First column
-            { x: 3, z: 0 }, { x: 3, z: 1 }, { x: 3, z: 2 }, { x: 3, z: 3 },
-            // Second column (rightmost)
-            { x: 4, z: 0 }, { x: 4, z: 1 }, { x: 4, z: 2 }, { x: 4, z: 3 },
-        ];
+        // White pieces: Bottom 3 rows (z = 1.5, 2.5, 3.5)
+        const whitePositions: GridPosition[] = [];
+        for (let row = 0; row < 3; row++) {
+            const z = 1.5 + row; // Start from 1.5
+            for (let col = 0; col < 8; col++) {
+                const x = -3.5 + col; // From -3.5 to 3.5
+                // Only place on dark squares (where x + z is odd)
+                if ((col + row) % 2 === 1) {
+                    whitePositions.push({ x, z });
+                }
+            }
+        }
 
         // Create black pieces
         blackPositions.forEach(pos => {
