@@ -83,8 +83,7 @@ export class GridMovementBehavior implements ObjectBehavior {
     }
 
     animate(mesh: THREE.Mesh): void {
-        // Standard rotation animation
-        mesh.rotation.x += 0.01;
+        // Standard rotation animation - straight rotation on Y axis only
         mesh.rotation.y += 0.01;
     }
 
