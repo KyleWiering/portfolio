@@ -9,9 +9,10 @@ This portfolio site is configured to deploy to GitHub Pages using GitHub Actions
 The `.github/workflows/deploy.yml` workflow:
 1. Builds the TypeScript code (`src/index.ts` → `dist/index.js`)
 2. Bundles the 3D game application with Three.js (`src/game.ts` → `dist/game.js`)
-3. Copies static files (`index.html`, `game.html`, `resume.html`, and `styles.css`) to the `dist` directory
-4. Uploads the `dist` directory as a Pages artifact
-5. Deploys the artifact to GitHub Pages
+3. Bundles the 3D Checkers application with Three.js (`src/checkers.ts` → `dist/checkers.js`)
+4. Copies static files (`index.html`, `game.html`, `checkers.html`, `resume.html`, and `styles.css`) to the `dist` directory
+5. Uploads the `dist` directory as a Pages artifact
+6. Deploys the artifact to GitHub Pages
 
 ### Ensuring Proper Configuration
 
@@ -39,7 +40,9 @@ The following files are deployed to GitHub Pages from the `dist/` directory:
 - `index.js` - Compiled JavaScript from TypeScript
 - `game.html` - 3D browser game page
 - `game.js` - Bundled 3D game application (includes Three.js)
+- `checkers.html` - 3D Checkers game page
+- `checkers.js` - Bundled 3D Checkers application (includes Three.js)
 - `resume.html` - Resume page
 - `styles.css` - Stylesheet
 
-All paths in HTML files use relative references (`./styles.css`, `./index.js`) to ensure compatibility with GitHub Pages project sites.
+All paths in HTML files use relative references (`./styles.css`, `./index.js`, `./game.js`, `./checkers.js`) to ensure compatibility with GitHub Pages project sites.
