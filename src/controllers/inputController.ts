@@ -1,8 +1,9 @@
 // Input Controller - Handles keyboard and touch input
 import * as THREE from 'three';
+import { MovementDirection } from '../core/types';
 
 export class InputController {
-    private onMove?: (direction: 'left' | 'right' | 'forward' | 'backward') => void;
+    private onMove?: (direction: MovementDirection) => void;
     private onTap?: (x: number, y: number) => void;
     private canvas: HTMLCanvasElement;
     private touchStartX: number = 0;
@@ -26,7 +27,7 @@ export class InputController {
     /**
      * Set callback for movement
      */
-    public onMovement(callback: (direction: 'left' | 'right' | 'forward' | 'backward') => void): void {
+    public onMovement(callback: (direction: MovementDirection) => void): void {
         this.onMove = callback;
     }
 
