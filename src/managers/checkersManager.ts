@@ -48,7 +48,7 @@ export class CheckersManager {
 
     /**
      * Initialize the checkers board with pieces
-     * Setup: 2 rows per side with pieces on all dark squares
+     * Setup: 4 rows per side with pieces on all dark squares (16 pieces per side)
      * Black pieces start at the top (negative z), white at bottom (positive z)
      */
     public initializeBoard(): void {
@@ -61,9 +61,9 @@ export class CheckersManager {
         // Pieces are centered on each square (at 0.5 offset from grid lines)
         // Dark squares are where (x + z) is odd
         
-        // Black pieces: Top 2 rows (z = -3.5, -2.5)
+        // Black pieces: Top 4 rows (z = -3.5, -2.5, -1.5, -0.5)
         const blackPositions: GridPosition[] = [];
-        for (let row = 0; row < 2; row++) {
+        for (let row = 0; row < 4; row++) {
             const z = -3.5 + row; // Start from -3.5 (center of first row), spacing 1.0
             for (let col = 0; col < 8; col++) {
                 const x = -3.5 + col; // From -3.5 to 3.5 (centers of squares), spacing 1.0
@@ -74,10 +74,10 @@ export class CheckersManager {
             }
         }
 
-        // White pieces: Bottom 2 rows (z = 2.5, 3.5)
+        // White pieces: Bottom 4 rows (z = 0.5, 1.5, 2.5, 3.5)
         const whitePositions: GridPosition[] = [];
-        for (let row = 0; row < 2; row++) {
-            const z = 2.5 + row; // Start from 2.5 (center of first row), spacing 1.0
+        for (let row = 0; row < 4; row++) {
+            const z = 0.5 + row; // Start from 0.5 (center of first row), spacing 1.0
             for (let col = 0; col < 8; col++) {
                 const x = -3.5 + col; // From -3.5 to 3.5 (centers of squares), spacing 1.0
                 // Only place on dark squares (where col + row is odd)
