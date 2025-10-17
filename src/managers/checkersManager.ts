@@ -43,30 +43,44 @@ export class CheckersManager {
 
     /**
      * Initialize the checkers board with pieces
-     * Two rows of black pyramids on the left
-     * Two rows of white pyramids on the right
+     * Standard checkers setup: 12 pieces per side on dark squares
+     * Black pieces start at the top (negative z), white at bottom (positive z)
      */
     public initializeBoard(): void {
         // Remove any existing pieces
         this.removeAllPieces();
 
-        // Create black pyramids on the left side (vertical columns)
-        // Two columns: x = -4, -3
-        const blackPositions: GridPosition[] = [
-            // First column (leftmost)
-            { x: -4, z: -3 }, { x: -4, z: -2 }, { x: -4, z: -1 }, { x: -4, z: 0 },
-            // Second column
-            { x: -3, z: -3 }, { x: -3, z: -2 }, { x: -3, z: -1 }, { x: -3, z: 0 },
-        ];
+        // Standard checkers board is 8x8, with pieces on dark squares only
+        // The board spans from -4 to 4 in both x and z directions (8 unit board, centered at origin)
+        // Each square is 1 unit to align with the isometric grid
+        // Pieces are centered on each square (at 0.5 offset from grid lines)
+        // Dark squares are where (x + z) is odd
+        
+        // Black pieces: Top 3 rows (z = -3.5, -2.5, -1.5)
+        const blackPositions: GridPosition[] = [];
+        for (let row = 0; row < 3; row++) {
+            const z = -3.5 + row; // Start from -3.5 (center of first row), spacing 1.0
+            for (let col = 0; col < 8; col++) {
+                const x = -3.5 + col; // From -3.5 to 3.5 (centers of squares), spacing 1.0
+                // Only place on dark squares (where col + row is odd)
+                if ((col + row) % 2 === 1) {
+                    blackPositions.push({ x, z });
+                }
+            }
+        }
 
-        // Create white pyramids on the right side (vertical columns)
-        // Two columns: x = 3, 4
-        const whitePositions: GridPosition[] = [
-            // First column
-            { x: 3, z: 0 }, { x: 3, z: 1 }, { x: 3, z: 2 }, { x: 3, z: 3 },
-            // Second column (rightmost)
-            { x: 4, z: 0 }, { x: 4, z: 1 }, { x: 4, z: 2 }, { x: 4, z: 3 },
-        ];
+        // White pieces: Bottom 3 rows (z = 1.5, 2.5, 3.5)
+        const whitePositions: GridPosition[] = [];
+        for (let row = 0; row < 3; row++) {
+            const z = 1.5 + row; // Start from 1.5 (center of first row), spacing 1.0
+            for (let col = 0; col < 8; col++) {
+                const x = -3.5 + col; // From -3.5 to 3.5 (centers of squares), spacing 1.0
+                // Only place on dark squares (where col + row is odd)
+                if ((col + row) % 2 === 1) {
+                    whitePositions.push({ x, z });
+                }
+            }
+        }
 
         // Create black pieces
         blackPositions.forEach(pos => {
@@ -83,24 +97,27 @@ export class CheckersManager {
      * Create a single checkers piece at the specified position
      */
     private createPiece(gridPosition: GridPosition, color: 'black' | 'white'): void {
-        const colorValue = color === 'black' ? 0x000000 : 0xffffff;
-        const pyramid = createPyramid({ useTexture: false, color: colorValue });
+        // Use brick texture for all pieces
+        const pyramid = createPyramid({ useTexture: true });
         
-        // Adjust material properties for better visibility
+        // Adjust material properties based on color
         const material = pyramid.material as THREE.MeshStandardMaterial;
+        
+        // Tint the brick texture based on piece color
         if (color === 'black') {
-            material.roughness = 0.7;
+            material.color = new THREE.Color(0x2a1810); // Dark brown tint for black pieces
+            material.roughness = 0.8;
             material.metalness = 0.1;
         } else {
-            material.roughness = 0.5;
+            material.color = new THREE.Color(0xd4a574); // Light tan tint for white pieces
+            material.roughness = 0.6;
             material.metalness = 0.0;
-            material.emissive = new THREE.Color(0x222222); // Slight glow for white pieces
-            material.emissiveIntensity = 0.1;
         }
         
-        // Position the piece
-        pyramid.position.x = gridPosition.x * this.gridSpacing;
-        pyramid.position.z = gridPosition.z * this.gridSpacing;
+        // Position the piece - gridPosition already contains final coordinates
+        // No need to multiply by gridSpacing since positions are already in world units
+        pyramid.position.x = gridPosition.x;
+        pyramid.position.z = gridPosition.z;
         pyramid.position.y = 0; // On the grid
         
         // Add to scene

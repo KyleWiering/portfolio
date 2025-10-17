@@ -1,5 +1,6 @@
 // Checkers Renderer - Handles WebGL scene setup with overhead camera view
 import * as THREE from 'three';
+import { createCheckerboardTexture } from '../core/textures/textureGenerator';
 
 /**
  * Create an isometric grid with dashed lines
@@ -55,6 +56,30 @@ function createIsometricGrid(width: number, depth: number, spacing: number): THR
 }
 
 /**
+ * Create a checkerboard plane with black and white squares
+ */
+function createCheckerboardPlane(): THREE.Mesh {
+    // Create an 8x8 checkerboard - 8 units to align with grid spacing of 1 unit per square
+    const boardSize = 8; // 8 units, each square is 1 unit to match isometric grid
+    const geometry = new THREE.PlaneGeometry(boardSize, boardSize);
+    
+    // Apply checkerboard texture
+    const texture = createCheckerboardTexture();
+    const material = new THREE.MeshStandardMaterial({
+        map: texture,
+        side: THREE.DoubleSide
+    });
+    
+    const plane = new THREE.Mesh(geometry, material);
+    
+    // Rotate to be horizontal and position slightly above the grid
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1.9; // Just above the grid at y=-2
+    
+    return plane;
+}
+
+/**
  * CheckersRenderer - Manages WebGL scene with overhead camera view for checkers
  */
 export class CheckersRenderer {
@@ -101,6 +126,10 @@ export class CheckersRenderer {
         // Add isometric grid
         const gridHelper = createIsometricGrid(20, 20, 1);
         this.scene.add(gridHelper);
+        
+        // Add checkerboard plane
+        const checkerboard = createCheckerboardPlane();
+        this.scene.add(checkerboard);
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
