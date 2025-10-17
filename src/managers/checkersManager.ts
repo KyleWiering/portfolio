@@ -19,9 +19,26 @@ export class CheckersManager {
     private pieces: CheckersPiece[] = [];
     private selectedPieceIndex: number = -1;
     private gridSpacing: number = 1;
+    private selectionIndicator: THREE.Mesh | null = null;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
+        this.createSelectionIndicator();
+    }
+
+    /**
+     * Create the blue sphere selection indicator
+     */
+    private createSelectionIndicator(): void {
+        const sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+        const sphereMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x0000ff, // Blue
+            emissive: 0x0000ff,
+            emissiveIntensity: 0.5
+        });
+        this.selectionIndicator = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        this.selectionIndicator.visible = false; // Hidden by default
+        this.scene.add(this.selectionIndicator);
     }
 
     /**
@@ -69,6 +86,18 @@ export class CheckersManager {
         const colorValue = color === 'black' ? 0x000000 : 0xffffff;
         const pyramid = createPyramid({ useTexture: false, color: colorValue });
         
+        // Adjust material properties for better visibility
+        const material = pyramid.material as THREE.MeshStandardMaterial;
+        if (color === 'black') {
+            material.roughness = 0.7;
+            material.metalness = 0.1;
+        } else {
+            material.roughness = 0.5;
+            material.metalness = 0.0;
+            material.emissive = new THREE.Color(0x222222); // Slight glow for white pieces
+            material.emissiveIntensity = 0.1;
+        }
+        
         // Position the piece
         pyramid.position.x = gridPosition.x * this.gridSpacing;
         pyramid.position.z = gridPosition.z * this.gridSpacing;
@@ -77,8 +106,11 @@ export class CheckersManager {
         // Add to scene
         this.scene.add(pyramid);
         
+        // Update matrix for raycasting
+        pyramid.updateMatrixWorld(true);
+        
         // Create behavior for this piece
-        const behavior = new CheckersPieceBehavior(this.scene);
+        const behavior = new CheckersPieceBehavior();
         
         // Store piece info
         this.pieces.push({
@@ -138,6 +170,14 @@ export class CheckersManager {
             this.selectedPieceIndex = index;
             const piece = this.pieces[this.selectedPieceIndex];
             piece.behavior.onSelect(piece.mesh, true);
+            
+            // Show selection indicator above the piece
+            if (this.selectionIndicator) {
+                this.selectionIndicator.position.x = piece.mesh.position.x;
+                this.selectionIndicator.position.y = piece.mesh.position.y + 2.5;
+                this.selectionIndicator.position.z = piece.mesh.position.z;
+                this.selectionIndicator.visible = true;
+            }
         }
     }
 
@@ -149,6 +189,11 @@ export class CheckersManager {
             const piece = this.pieces[this.selectedPieceIndex];
             piece.behavior.onSelect(piece.mesh, false);
             this.selectedPieceIndex = -1;
+        }
+        
+        // Hide selection indicator
+        if (this.selectionIndicator) {
+            this.selectionIndicator.visible = false;
         }
     }
 

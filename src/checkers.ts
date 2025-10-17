@@ -36,8 +36,8 @@ function initCheckers(): void {
         // Get all piece meshes for raycasting
         const pieceMeshes = checkersManager.getPieceMeshes();
         
-        // Check for intersections
-        const intersects = raycaster.intersectObjects(pieceMeshes);
+        // Check for intersections (recursive=true to check children)
+        const intersects = raycaster.intersectObjects(pieceMeshes, true);
         
         if (intersects.length > 0) {
             // Find the index of the intersected piece
