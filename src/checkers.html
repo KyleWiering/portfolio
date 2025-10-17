@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="3D Hello World - Interactive WebGL Demo">
-    <title>3D Hello World | Kyle Wiering</title>
+    <meta name="description" content="Checkers - Interactive 3D Checkers Game">
+    <title>Checkers | Kyle Wiering</title>
     <link rel="stylesheet" href="./styles.css">
     <style>
         /* Game-specific styles */
@@ -312,32 +312,20 @@
 
     <!-- Game UI -->
     <div class="game-ui">
-        <h1 class="game-title">3D Hello World</h1>
-        <p class="game-description">Interactive WebGL demo</p>
+        <h1 class="game-title">Checkers</h1>
+        <p class="game-description">Interactive 3D Checkers</p>
     </div>
 
     <!-- Game Container -->
     <div id="game-container">
         <!-- In-WebGL Menu -->
         <div class="webgl-menu">
-            <h3>Menu</h3>
+            <h3>Checkers</h3>
             <div class="menu-section">
-                <h4>Selected Model</h4>
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <span id="selected-model-text" style="font-size: 1.1rem; font-weight: 600;">🔺 Pyramid</span>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button id="prev-model" style="flex: 1;">◀ Prev</button>
-                    <button id="next-model" style="flex: 1;">Next ▶</button>
-                </div>
-            </div>
-            <div class="menu-section">
-                <div class="texture-toggle">
-                    <label>
-                        <input type="checkbox" id="texture-toggle">
-                        <span>Use Texture</span>
-                    </label>
-                </div>
+                <h4>Instructions</h4>
+                <p style="text-align: center; font-size: 0.85rem; margin: 10px 0;">
+                    Click/tap on a piece to select it
+                </p>
             </div>
             <button class="settings-button" id="settings-button">⚙️ Settings</button>
         </div>
@@ -386,6 +374,6 @@
     <a href="index.html" class="back-button">← Back to Portfolio</a>
 
     <!-- Three.js Module -->
-    <script type="module" src="./game.js"></script>
+    <script type="module" src="./checkers.js"></script>
 </body>
 </html>
