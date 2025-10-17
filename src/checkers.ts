@@ -113,9 +113,9 @@ function initCheckers(): void {
             </div>
             <div class="control-section">
                 <h5>ℹ️ Board Setup</h5>
-                <p>• Black pieces: Top (start)</p>
-                <p>• White pieces: Bottom (start)</p>
-                <p>• 8x8 board with diagonal movement</p>
+                <p>• Black pieces: Top (2 rows)</p>
+                <p>• White pieces: Bottom (2 rows)</p>
+                <p>• 8 pieces per side on dark squares</p>
             </div>
         `;
     }
