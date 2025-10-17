@@ -48,8 +48,35 @@ function initCheckers(): void {
                 checkersManager.selectPieceByIndex(pieceIndex);
             }
         } else {
-            // Clicked on empty space - deselect
-            checkersManager.deselectPiece();
+            // Clicked on empty space - try to move selected piece here
+            if (checkersManager.getSelectedPieceIndex() >= 0) {
+                // Cast ray to the board plane to get grid coordinates
+                const boardPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.9);
+                const intersectPoint = new THREE.Vector3();
+                raycaster.ray.intersectPlane(boardPlane, intersectPoint);
+                
+                // Round to nearest grid position
+                const gridX = Math.round(intersectPoint.x);
+                const gridZ = Math.round(intersectPoint.z);
+                
+                // Attempt to move piece
+                const result = checkersManager.movePiece({ x: gridX, z: gridZ });
+                
+                if (!result.success && result.message) {
+                    console.log('Move failed:', result.message);
+                } else if (result.success) {
+                    console.log('Move successful!');
+                    if (result.captured && result.captured.length > 0) {
+                        console.log('Captured pieces:', result.captured.length);
+                    }
+                    if (result.becameKing) {
+                        console.log('Piece became a king!');
+                    }
+                }
+            } else {
+                // Deselect if no piece selected
+                checkersManager.deselectPiece();
+            }
         }
     });
     
@@ -68,17 +95,27 @@ function initCheckers(): void {
     if (settingsContent) {
         settingsContent.innerHTML = `
             <div class="control-section">
-                <h5>🎯 Piece Selection</h5>
-                <p><strong>Click/Tap:</strong> Select a checkers piece</p>
-                <p>• Blue sphere appears above selected piece</p>
-                <p>• Click empty space to deselect</p>
+                <h5>🎯 How to Play</h5>
+                <p><strong>Click/Tap:</strong> Select your piece</p>
+                <p><strong>Click Board:</strong> Move to that square</p>
+                <p>• Blue sphere shows selected piece</p>
+                <p id="current-player">• Current turn: <strong>Black</strong></p>
             </div>
             <div class="control-section">
-                <h5>ℹ️ Board Information</h5>
-                <p>• Black pieces: Left side (2 rows)</p>
-                <p>• White pieces: Right side (2 rows)</p>
-                <p>• Pieces do not rotate</p>
-                <p>• Camera positioned overhead</p>
+                <h5>📋 Rules</h5>
+                <p>• Move diagonally forward 1 space</p>
+                <p>• First move can be 1 or 2 spaces</p>
+                <p>• Must jump opponent when possible</p>
+                <p>• Capture by jumping over opponent</p>
+                <p>• Multi-jumps allowed</p>
+                <p>• Reach opposite side to become King</p>
+                <p>• Kings move backward and forward</p>
+            </div>
+            <div class="control-section">
+                <h5>ℹ️ Board Setup</h5>
+                <p>• Black pieces: Top (start)</p>
+                <p>• White pieces: Bottom (start)</p>
+                <p>• 8x8 board with diagonal movement</p>
             </div>
         `;
     }
@@ -109,6 +146,12 @@ function initCheckers(): void {
         
         // Animate pieces (currently does nothing since rotation is disabled)
         checkersManager.animatePieces();
+        
+        // Update current player display
+        const currentPlayerElement = document.getElementById('current-player');
+        if (currentPlayerElement) {
+            currentPlayerElement.innerHTML = `• Current: <strong>${checkersManager.getStatusMessage()}</strong>`;
+        }
         
         // Render the scene
         renderer.render();

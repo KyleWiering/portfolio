@@ -29,3 +29,18 @@ export type ObjectType = 'pyramid' | 'cube' | 'sphere';
  * Movement directions for objects
  */
 export type MovementDirection = 'left' | 'right' | 'forward' | 'backward';
+
+/**
+ * Checkers piece color
+ */
+export type CheckersColor = 'black' | 'white';
+
+/**
+ * Move result for checkers
+ */
+export interface MoveResult {
+    success: boolean;
+    captured?: GridPosition[];
+    becameKing?: boolean;
+    message?: string;
+}
