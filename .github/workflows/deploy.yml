@@ -38,6 +38,7 @@ jobs:
           cp src/index.html dist/index.html
           cp src/resume.html dist/resume.html
           cp src/game.html dist/game.html
+          cp src/checkers.html dist/checkers.html
           cp src/styles.css dist/styles.css
           cp src/Kyle-Wiering-10-2025.docx dist/Kyle-Wiering-10-2025.docx
 

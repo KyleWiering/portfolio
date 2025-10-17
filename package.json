@@ -4,8 +4,9 @@
   "description": "Creating a personal home page.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && npm run build:game",
+    "build": "tsc && npm run build:game && npm run build:checkers",
     "build:game": "esbuild src/game.ts --bundle --outfile=dist/game.js --format=esm",
+    "build:checkers": "esbuild src/checkers.ts --bundle --outfile=dist/checkers.js --format=esm",
     "dev": "tsc --watch"
   },
   "keywords": [

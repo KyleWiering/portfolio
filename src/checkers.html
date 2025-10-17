@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="3D Hello World - Interactive WebGL Demo">
-    <title>3D Hello World | Kyle Wiering</title>
+    <meta name="description" content="Checkers - Interactive 3D Checkers Game">
+    <title>Checkers | Kyle Wiering</title>
     <link rel="stylesheet" href="./styles.css">
     <style>
         /* Game-specific styles */
@@ -312,32 +312,20 @@
 
     <!-- Game UI -->
     <div class="game-ui">
-        <h1 class="game-title">3D Hello World</h1>
-        <p class="game-description">Interactive WebGL demo</p>
+        <h1 class="game-title">Checkers</h1>
+        <p class="game-description">Interactive 3D Checkers</p>
     </div>
 
     <!-- Game Container -->
     <div id="game-container">
         <!-- In-WebGL Menu -->
         <div class="webgl-menu">
-            <h3>Menu</h3>
+            <h3>Checkers</h3>
             <div class="menu-section">
-                <h4>Selected Model</h4>
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <span id="selected-model-text" style="font-size: 1.1rem; font-weight: 600;">🔺 Pyramid</span>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button id="prev-model" style="flex: 1;">◀ Prev</button>
-                    <button id="next-model" style="flex: 1;">Next ▶</button>
-                </div>
-            </div>
-            <div class="menu-section">
-                <div class="texture-toggle">
-                    <label>
-                        <input type="checkbox" id="texture-toggle">
-                        <span>Use Texture</span>
-                    </label>
-                </div>
+                <h4>Instructions</h4>
+                <p style="text-align: center; font-size: 0.85rem; margin: 10px 0;">
+                    Click/tap on a piece to select it
+                </p>
             </div>
             <button class="settings-button" id="settings-button">⚙️ Settings</button>
         </div>
@@ -347,35 +335,34 @@
             <h4>Controls & Settings</h4>
             <div class="settings-content">
                 <div class="control-section">
-                    <h5>🎯 Model Selection</h5>
-                    <p><strong>Switch Models:</strong></p>
-                    <p>• Use "Prev" and "Next" buttons in menu</p>
-                    <p>• Selected model is scaled larger</p>
-                    <p>• Only the selected model can be moved</p>
+                    <h5>📝 How to Play</h5>
+                    <p>
+                        <strong>Goal:</strong> Capture all of your opponent's pieces or block them so they cannot move.
+                    </p>
+                    <p>
+                        <strong>Basic Rules:</strong>
+                        <ul>
+                            <li>Players take turns moving one piece at a time.</li>
+                            <li>Pieces move diagonally forward to an adjacent empty square.</li>
+                            <li>Capture opponent pieces by jumping over them diagonally to an empty square.</li>
+                            <li>When a piece reaches the far row, it becomes a King and can move backward as well.</li>
+                        </ul>
+                    </p>
                 </div>
                 <div class="control-section">
-                    <h5>🎮 Navigation Controls</h5>
-                    <p><strong>Desktop:</strong> Use Arrow Keys</p>
-                    <p>⬆️ Arrow Up - Move Forward (decrease Z)</p>
-                    <p>⬇️ Arrow Down - Move Backward (increase Z)</p>
-                    <p>⬅️ Arrow Left - Move Left (decrease X)</p>
-                    <p>➡️ Arrow Right - Move Right (increase X)</p>
+                    <h5>🖱️ Controls</h5>
+                    <p>
+                        <strong>Desktop:</strong> Click on a piece to select it, then click on a highlighted square to move.
+                    </p>
+                    <p>
+                        <strong>Mobile:</strong> Tap a piece to select, then tap a highlighted square to move.
+                    </p>
                 </div>
                 <div class="control-section">
-                    <h5>📱 Mobile Controls</h5>
-                    <p><strong>Tap:</strong> Tap on a model to select it</p>
-                    <p><strong>Swipe:</strong> Move the selected model</p>
-                    <p>Swipe Up - Move Forward</p>
-                    <p>Swipe Down - Move Backward</p>
-                    <p>Swipe Left - Move Left</p>
-                    <p>Swipe Right - Move Right</p>
-                </div>
-                <div class="control-section">
-                    <h5>ℹ️ Scene Information</h5>
-                    <p>Grid Size: 20x20 units</p>
-                    <p>Movement: 1 unit per step</p>
-                    <p>All models rotate automatically</p>
-                    <p>Toggle textures using the checkbox</p>
+                    <h5>⚙️ Settings</h5>
+                    <p>
+                        Adjust game options such as sound, board style, or restart the game from the menu.
+                    </p>
                 </div>
             </div>
             <button class="close-settings" id="close-settings">✕ Close</button>
@@ -386,6 +373,6 @@
     <a href="index.html" class="back-button">← Back to Portfolio</a>
 
     <!-- Three.js Module -->
-    <script type="module" src="./game.js"></script>
+    <script type="module" src="./checkers.js"></script>
 </body>
 </html>

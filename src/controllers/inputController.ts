@@ -22,6 +22,7 @@ export class InputController {
     public initialize(): void {
         this.setupKeyboardControls();
         this.setupTouchControls();
+        this.setupMouseControls();
     }
 
     /**
@@ -123,5 +124,16 @@ export class InputController {
                 }
             }
         }, { passive: true });
+    }
+
+    /**
+     * Set up mouse controls for desktop (click to select)
+     */
+    private setupMouseControls(): void {
+        this.canvas.addEventListener('click', (e: MouseEvent) => {
+            if (this.onTap) {
+                this.onTap(e.clientX, e.clientY);
+            }
+        });
     }
 }
