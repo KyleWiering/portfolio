@@ -4,7 +4,7 @@
  */
 import * as THREE from 'three';
 import { ObjectConfig } from '../../core/types';
-import { createCheckeredTexture } from '../../core/textures/textureGenerator';
+import { createCheckeredTexture, createBrickTexture } from '../../core/textures/textureGenerator';
 
 export function createPyramid(config: ObjectConfig): THREE.Mesh {
     // Reduced by 30%: 0.75 * 0.7 = 0.525, 1.25 * 0.7 = 0.875
@@ -13,7 +13,8 @@ export function createPyramid(config: ObjectConfig): THREE.Mesh {
     let material: THREE.Material;
     
     if (config.useTexture) {
-        const texture = createCheckeredTexture();
+        // Use brick texture for checker pieces
+        const texture = createBrickTexture();
         material = new THREE.MeshStandardMaterial({ map: texture });
     } else {
         const color = config.color || 0xf59e0b; // Amber as default
