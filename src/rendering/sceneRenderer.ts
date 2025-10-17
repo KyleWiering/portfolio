@@ -86,7 +86,7 @@ export class SceneRenderer {
             0.1,
             1000
         );
-        this.camera.position.z = 3.5;
+        this.camera.position.z = 5;
 
         // Renderer setup
         this.renderer = new THREE.WebGLRenderer({ antialias: true });

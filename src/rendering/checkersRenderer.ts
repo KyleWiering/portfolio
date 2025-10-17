@@ -109,9 +109,8 @@ export class CheckersRenderer {
             1000
         );
         
-        // Position camera above the grid, looking down
-        // Using isometric-like angle but from above - zoomed in closer
-        this.camera.position.set(0, 10, 5);
+        // Position camera above the grid, looking down - zoomed in closer
+        this.camera.position.set(0, 8, 4);
         this.camera.lookAt(0, -1, 0);
 
         // Renderer setup
