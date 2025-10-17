@@ -50,22 +50,22 @@ export class CheckersManager {
         // Remove any existing pieces
         this.removeAllPieces();
 
-        // Create black pyramids on the left side (x = -4 to -1)
-        // Two rows: z = -3, -2 and z = 2, 3
+        // Create black pyramids on the left side (vertical columns)
+        // Two columns: x = -4, -3
         const blackPositions: GridPosition[] = [
-            // First row (bottom)
-            { x: -4, z: -3 }, { x: -3, z: -3 }, { x: -2, z: -3 }, { x: -1, z: -3 },
-            // Second row
-            { x: -4, z: -2 }, { x: -3, z: -2 }, { x: -2, z: -2 }, { x: -1, z: -2 },
+            // First column (leftmost)
+            { x: -4, z: -3 }, { x: -4, z: -2 }, { x: -4, z: -1 }, { x: -4, z: 0 },
+            // Second column
+            { x: -3, z: -3 }, { x: -3, z: -2 }, { x: -3, z: -1 }, { x: -3, z: 0 },
         ];
 
-        // Create white pyramids on the right side (x = 1 to 4)
-        // Two rows: z = 2, 3
+        // Create white pyramids on the right side (vertical columns)
+        // Two columns: x = 3, 4
         const whitePositions: GridPosition[] = [
-            // First row
-            { x: 1, z: 2 }, { x: 2, z: 2 }, { x: 3, z: 2 }, { x: 4, z: 2 },
-            // Second row (top)
-            { x: 1, z: 3 }, { x: 2, z: 3 }, { x: 3, z: 3 }, { x: 4, z: 3 },
+            // First column
+            { x: 3, z: 0 }, { x: 3, z: 1 }, { x: 3, z: 2 }, { x: 3, z: 3 },
+            // Second column (rightmost)
+            { x: 4, z: 0 }, { x: 4, z: 1 }, { x: 4, z: 2 }, { x: 4, z: 3 },
         ];
 
         // Create black pieces
@@ -174,7 +174,7 @@ export class CheckersManager {
             // Show selection indicator above the piece
             if (this.selectionIndicator) {
                 this.selectionIndicator.position.x = piece.mesh.position.x;
-                this.selectionIndicator.position.y = piece.mesh.position.y + 2.5;
+                this.selectionIndicator.position.y = piece.mesh.position.y + 1.5;
                 this.selectionIndicator.position.z = piece.mesh.position.z;
                 this.selectionIndicator.visible = true;
             }
