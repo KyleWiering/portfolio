@@ -1,20 +1,16 @@
 // Model Manager - Handles model creation and management
 import * as THREE from 'three';
-import { createPyramid } from '../models/pyramid';
-import { createCube } from '../models/cube';
-import { createSphere } from '../models/sphere';
+import { createPyramid, createCube, createSphere } from '../objects/geometries';
+import { ObjectBehavior, GridMovementBehavior } from '../objects/behaviors';
+import { ObjectType, GridPosition } from '../core/types';
 
-export type ModelType = 'pyramid' | 'cube' | 'sphere';
-
-export interface GridPosition {
-    x: number;
-    z: number;
-}
+export type ModelType = ObjectType;
 
 interface ModelInfo {
     mesh: THREE.Mesh;
     type: ModelType;
     gridPosition: GridPosition;
+    behavior: ObjectBehavior;
 }
 
 /**
@@ -47,7 +43,12 @@ export class ModelManager {
         pyramid.position.x = pyramidPos.x * this.gridSpacing;
         pyramid.position.z = pyramidPos.z * this.gridSpacing;
         this.scene.add(pyramid);
-        this.models.push({ mesh: pyramid, type: 'pyramid', gridPosition: pyramidPos });
+        this.models.push({ 
+            mesh: pyramid, 
+            type: 'pyramid', 
+            gridPosition: pyramidPos,
+            behavior: new GridMovementBehavior()
+        });
 
         // Create cube at position (0, 0) - center
         const cube = createCube(config);
@@ -55,7 +56,12 @@ export class ModelManager {
         cube.position.x = cubePos.x * this.gridSpacing;
         cube.position.z = cubePos.z * this.gridSpacing;
         this.scene.add(cube);
-        this.models.push({ mesh: cube, type: 'cube', gridPosition: cubePos });
+        this.models.push({ 
+            mesh: cube, 
+            type: 'cube', 
+            gridPosition: cubePos,
+            behavior: new GridMovementBehavior()
+        });
 
         // Create sphere at position (3, 0)
         const sphere = createSphere(config);
@@ -63,7 +69,12 @@ export class ModelManager {
         sphere.position.x = spherePos.x * this.gridSpacing;
         sphere.position.z = spherePos.z * this.gridSpacing;
         this.scene.add(sphere);
-        this.models.push({ mesh: sphere, type: 'sphere', gridPosition: spherePos });
+        this.models.push({ 
+            mesh: sphere, 
+            type: 'sphere', 
+            gridPosition: spherePos,
+            behavior: new GridMovementBehavior()
+        });
 
         // Select the first model by default
         this.selectedModelIndex = 0;
@@ -91,8 +102,7 @@ export class ModelManager {
      */
     public rotateModels(): void {
         this.models.forEach(modelInfo => {
-            modelInfo.mesh.rotation.x += 0.01;
-            modelInfo.mesh.rotation.y += 0.01;
+            modelInfo.behavior.animate(modelInfo.mesh);
         });
     }
 
@@ -125,39 +135,13 @@ export class ModelManager {
         if (this.models.length === 0) return;
 
         const selectedModel = this.models[this.selectedModelIndex];
-        
-        switch (direction) {
-            case 'left':
-                if (selectedModel.gridPosition.x > -this.gridBounds) {
-                    selectedModel.gridPosition.x -= 1;
-                }
-                break;
-            case 'right':
-                if (selectedModel.gridPosition.x < this.gridBounds) {
-                    selectedModel.gridPosition.x += 1;
-                }
-                break;
-            case 'forward':
-                if (selectedModel.gridPosition.z > -this.gridBounds) {
-                    selectedModel.gridPosition.z -= 1;
-                }
-                break;
-            case 'backward':
-                if (selectedModel.gridPosition.z < this.gridBounds) {
-                    selectedModel.gridPosition.z += 1;
-                }
-                break;
-        }
-        
-        this.updateModelPosition(selectedModel);
-    }
-
-    /**
-     * Update model position based on grid position
-     */
-    private updateModelPosition(modelInfo: ModelInfo): void {
-        modelInfo.mesh.position.x = modelInfo.gridPosition.x * this.gridSpacing;
-        modelInfo.mesh.position.z = modelInfo.gridPosition.z * this.gridSpacing;
+        selectedModel.behavior.move(
+            selectedModel.mesh,
+            selectedModel.gridPosition,
+            direction,
+            this.gridSpacing,
+            this.gridBounds
+        );
     }
 
     /**
@@ -165,12 +149,9 @@ export class ModelManager {
      */
     private updateSelectedModelHighlight(): void {
         this.models.forEach((modelInfo, index) => {
-            if (index === this.selectedModelIndex) {
-                // Scale up the selected model slightly
-                modelInfo.mesh.scale.set(1.2, 1.2, 1.2);
-            } else {
-                // Reset scale for non-selected models
-                modelInfo.mesh.scale.set(1, 1, 1);
+            const isSelected = index === this.selectedModelIndex;
+            if (modelInfo.behavior.onSelect) {
+                modelInfo.behavior.onSelect(modelInfo.mesh, isSelected);
             }
         });
     }

@@ -6,6 +6,36 @@ This document describes the architecture of the 3D Model Viewer application.
 
 The application is organized into distinct modules with clear responsibilities:
 
+### 📁 `/src/core/`
+**Shared Core Modules** - Common types, utilities, and resources
+
+#### `/src/core/types/`
+- Defines shared interfaces and type definitions
+- `ObjectConfig`, `GridPosition`, `ObjectType`, `MovementDirection`
+- Ensures type consistency across all modules
+
+#### `/src/core/textures/`
+- **textureGenerator.ts** - Procedural texture creation
+- Provides texture generators for different object types
+- Gradient, striped, and checkered patterns
+- Reusable texture utilities
+
+### 📁 `/src/objects/`
+**3D Object Definitions** - Geometry and behavior modules
+
+#### `/src/objects/geometries/`
+- **cube.ts**, **sphere.ts**, **pyramid.ts** - Geometry creators
+- Each creates a THREE.Mesh with optional texture support
+- Uses shared textures from core module
+- Cleanly separated geometry definitions
+
+#### `/src/objects/behaviors/`
+- **objectBehavior.ts** - Behavior interfaces and implementations
+- `ObjectBehavior` interface for extensible behavior patterns
+- `GridMovementBehavior` - Standard grid-based movement
+- Supports different movement patterns and animations
+- Easy to extend for unique object behaviors
+
 ### 📁 `/src/rendering/`
 **SceneRenderer** - Handles WebGL scene setup and rendering
 - Creates and manages the THREE.js scene, camera, and renderer
@@ -19,8 +49,9 @@ The application is organized into distinct modules with clear responsibilities:
 - Creates and displays 3D models (pyramid, cube, sphere)
 - Manages model disposal and cleanup
 - Handles grid-based positioning
-- Provides movement methods (left, right, forward, backward)
+- Delegates movement to object behaviors
 - Manages model rotation for animation
+- Uses behavior pattern for extensible functionality
 
 ### 📁 `/src/ui/`
 **MenuController** - Handles menu UI interactions
@@ -37,12 +68,6 @@ The application is organized into distinct modules with clear responsibilities:
 - Provides movement callbacks
 - Manages input thresholds and validation
 
-### 📁 `/src/models/`
-**Model Creators** - Individual model creation functions
-- `createPyramid()` - Creates pyramid geometry
-- `createCube()` - Creates cube geometry
-- `createSphere()` - Creates sphere geometry
-
 ## Data Flow
 
 ```
@@ -50,20 +75,36 @@ User Input (Keyboard/Touch)
     ↓
 InputController
     ↓ (movement callback)
-ModelManager → SceneRenderer (render)
+ModelManager
+    ↓ (delegates to)
+ObjectBehavior → Updates mesh position/state
+    ↓
+SceneRenderer (render)
     ↑
 MenuController
     ↑
 User Interaction (UI Clicks)
 ```
 
+## Extensibility
+
+The new architecture supports easy extension:
+
+1. **New Object Types**: Add geometry creators in `/src/objects/geometries/`
+2. **Custom Behaviors**: Implement `ObjectBehavior` interface for unique movement patterns
+3. **Texture Variations**: Add texture generators in `/src/core/textures/`
+4. **Shared Types**: Update `/src/core/types/` for new object types
+
 ## Benefits
 
-1. **Maintainability**: Each module has a single responsibility
+1. **Maintainability**: Each module has a single, clear responsibility
 2. **Testability**: Modules can be tested independently
 3. **Reusability**: Components can be reused in other projects
-4. **Scalability**: Easy to add new features or models
-5. **GitHub Actions Compatibility**: Clean separation makes CI/CD easier
+4. **Scalability**: Easy to add new features, objects, or behaviors
+5. **Modularity**: Clear separation between geometry, behavior, and presentation
+6. **Extensibility**: Behavior pattern allows diverse object interactions
+7. **DRY Principle**: Shared types and textures eliminate code duplication
+8. **GitHub Actions Compatibility**: Clean separation makes CI/CD easier
 
 ## Main Entry Point
 
