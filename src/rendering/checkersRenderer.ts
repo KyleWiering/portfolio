@@ -60,7 +60,7 @@ function createIsometricGrid(width: number, depth: number, spacing: number): THR
  */
 function createCheckerboardPlane(): THREE.Mesh {
     // Create an 8x8 checkerboard
-    const boardSize = 8; // 8 units to match grid spacing
+    const boardSize = 12; // 12 units for larger display while staying within grid scale
     const geometry = new THREE.PlaneGeometry(boardSize, boardSize);
     
     // Apply checkerboard texture

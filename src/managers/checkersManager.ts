@@ -51,15 +51,15 @@ export class CheckersManager {
         this.removeAllPieces();
 
         // Standard checkers board is 8x8, with pieces on dark squares only
-        // The board spans from -4 to 4 in both x and z directions (centered at origin)
+        // The board spans from -6 to 6 in both x and z directions (12 unit board, centered at origin)
         // Dark squares are where (x + z) is odd
         
-        // Black pieces: Top 3 rows (z = -3.5, -2.5, -1.5)
+        // Black pieces: Top 3 rows (z = -5.25, -3.75, -2.25)
         const blackPositions: GridPosition[] = [];
         for (let row = 0; row < 3; row++) {
-            const z = -3.5 + row; // Start from -3.5
+            const z = -5.25 + row * 1.5; // Start from -5.25, spacing 1.5
             for (let col = 0; col < 8; col++) {
-                const x = -3.5 + col; // From -3.5 to 3.5
+                const x = -5.25 + col * 1.5; // From -5.25 to 5.25, spacing 1.5
                 // Only place on dark squares (where x + z is odd)
                 if ((col + row) % 2 === 1) {
                     blackPositions.push({ x, z });
@@ -67,12 +67,12 @@ export class CheckersManager {
             }
         }
 
-        // White pieces: Bottom 3 rows (z = 1.5, 2.5, 3.5)
+        // White pieces: Bottom 3 rows (z = 2.25, 3.75, 5.25)
         const whitePositions: GridPosition[] = [];
         for (let row = 0; row < 3; row++) {
-            const z = 1.5 + row; // Start from 1.5
+            const z = 2.25 + row * 1.5; // Start from 2.25, spacing 1.5
             for (let col = 0; col < 8; col++) {
-                const x = -3.5 + col; // From -3.5 to 3.5
+                const x = -5.25 + col * 1.5; // From -5.25 to 5.25, spacing 1.5
                 // Only place on dark squares (where x + z is odd)
                 if ((col + row) % 2 === 1) {
                     whitePositions.push({ x, z });

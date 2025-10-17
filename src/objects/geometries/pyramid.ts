@@ -7,7 +7,8 @@ import { ObjectConfig } from '../../core/types';
 import { createCheckeredTexture } from '../../core/textures/textureGenerator';
 
 export function createPyramid(config: ObjectConfig): THREE.Mesh {
-    const geometry = new THREE.ConeGeometry(0.75, 1.25, 4);
+    // Reduced by 30%: 0.75 * 0.7 = 0.525, 1.25 * 0.7 = 0.875
+    const geometry = new THREE.ConeGeometry(0.525, 0.875, 4);
     
     let material: THREE.Material;
     
