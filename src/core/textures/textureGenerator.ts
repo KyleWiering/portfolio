@@ -85,10 +85,10 @@ export function createCheckerboardTexture(): THREE.Texture {
     canvas.height = 512;
     const context = canvas.getContext('2d')!;
     
-    // Create an 8x8 checkerboard pattern (standard checkers board)
-    const tileSize = 64; // 512/8 = 64 pixels per square
-    for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
+    // Create a 10x10 checkerboard pattern
+    const tileSize = 51.2; // 512/10 = 51.2 pixels per square
+    for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 10; x++) {
             const isEven = (x + y) % 2 === 0;
             context.fillStyle = isEven ? '#ffffff' : '#000000';
             context.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
