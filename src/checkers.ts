@@ -110,7 +110,7 @@ function initCheckers(): void {
                 <p><strong>Click/Tap:</strong> Select your piece</p>
                 <p><strong>Click Board:</strong> Move to that square</p>
                 <p>• Hourglass shows selected piece</p>
-                <p id="current-player">• Current turn: <strong>Black</strong></p>
+                <p id="current-player">• Current turn: <strong>White</strong></p>
                 <p id="piece-count">• Black: 20 | White: 20</p>
             </div>
             <div class="control-section">

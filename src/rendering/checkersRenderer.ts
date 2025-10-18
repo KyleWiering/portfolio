@@ -115,7 +115,7 @@ export class CheckersRenderer {
             75,
             window.innerWidth / window.innerHeight,
             0.1,
-            1000
+            2000  // Increased far plane to see horizon
         );
         
         // Position camera above the grid, looking down - zoomed in closer
@@ -243,38 +243,104 @@ export class CheckersRenderer {
      */
     private createWoodTexture(): THREE.Texture {
         const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
+        canvas.width = 512;
+        canvas.height = 512;
         const context = canvas.getContext('2d')!;
         
-        // Base wood color
-        context.fillStyle = '#8B4513';
-        context.fillRect(0, 0, 256, 256);
+        // Base wood color - rich brown
+        const gradient = context.createLinearGradient(0, 0, 512, 0);
+        gradient.addColorStop(0, '#5c3317');
+        gradient.addColorStop(0.5, '#6b4226');
+        gradient.addColorStop(1, '#4a2511');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 512, 512);
         
-        // Add wood grain lines
-        for (let i = 0; i < 10; i++) {
-            const y = Math.random() * 256;
-            const darkness = Math.random() * 0.3;
-            context.strokeStyle = `rgba(0, 0, 0, ${darkness})`;
-            context.lineWidth = 1 + Math.random() * 2;
+        // Add wood grain rings
+        for (let i = 0; i < 8; i++) {
+            const centerY = 256 + (Math.random() - 0.5) * 100;
+            const maxRadius = 100 + Math.random() * 150;
+            
+            for (let radius = 10; radius < maxRadius; radius += 8 + Math.random() * 12) {
+                const opacity = 0.1 + Math.random() * 0.3;
+                context.strokeStyle = `rgba(30, 15, 5, ${opacity})`;
+                context.lineWidth = 2 + Math.random() * 3;
+                
+                // Draw wavy ring
+                context.beginPath();
+                for (let angle = 0; angle <= Math.PI * 2; angle += 0.1) {
+                    const waviness = Math.sin(angle * 4) * 3;
+                    const r = radius + waviness;
+                    const x = 256 + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r * 0.3;
+                    
+                    if (angle === 0) {
+                        context.moveTo(x, y);
+                    } else {
+                        context.lineTo(x, y);
+                    }
+                }
+                context.closePath();
+                context.stroke();
+            }
+        }
+        
+        // Add horizontal grain lines
+        for (let i = 0; i < 30; i++) {
+            const y = Math.random() * 512;
+            const darkness = 0.1 + Math.random() * 0.2;
+            context.strokeStyle = `rgba(20, 10, 5, ${darkness})`;
+            context.lineWidth = 0.5 + Math.random() * 1.5;
+            
             context.beginPath();
             context.moveTo(0, y);
-            context.lineTo(256, y + Math.random() * 20 - 10);
+            
+            // Wavy line
+            for (let x = 0; x <= 512; x += 10) {
+                const wave = Math.sin(x * 0.05) * 2;
+                context.lineTo(x, y + wave);
+            }
             context.stroke();
         }
         
-        return new THREE.CanvasTexture(canvas);
+        // Add knots and imperfections
+        for (let i = 0; i < 5; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const size = 10 + Math.random() * 20;
+            
+            const knotGradient = context.createRadialGradient(x, y, 0, x, y, size);
+            knotGradient.addColorStop(0, 'rgba(30, 15, 5, 0.5)');
+            knotGradient.addColorStop(1, 'rgba(30, 15, 5, 0)');
+            context.fillStyle = knotGradient;
+            context.fillRect(x - size, y - size, size * 2, size * 2);
+        }
+        
+        // Add texture noise for realism
+        const imageData = context.getImageData(0, 0, 512, 512);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            const noise = (Math.random() - 0.5) * 10;
+            data[i] = Math.max(0, Math.min(255, data[i] + noise));
+            data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
+            data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
+        }
+        context.putImageData(imageData, 0, 0);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
     }
 
     /**
      * Create grassy field up to the horizon
      */
     private createGrassyField(): THREE.Mesh {
-        const fieldSize = 200; // Large field extending to horizon
+        const fieldSize = 500; // Much larger field extending to horizon
         const grassTexture = this.createGrassTexture();
         grassTexture.wrapS = THREE.RepeatWrapping;
         grassTexture.wrapT = THREE.RepeatWrapping;
-        grassTexture.repeat.set(50, 50); // Repeat texture for better appearance
+        grassTexture.repeat.set(100, 100); // More repetition for better appearance
         
         const grassMaterial = new THREE.MeshStandardMaterial({
             map: grassTexture,
@@ -301,20 +367,50 @@ export class CheckersRenderer {
         canvas.height = 256;
         const context = canvas.getContext('2d')!;
         
-        // Base grass color
-        context.fillStyle = '#228B22';
+        // Base grass color - darker, richer green
+        context.fillStyle = '#2d5016';
         context.fillRect(0, 0, 256, 256);
         
-        // Add random grass blades
-        for (let i = 0; i < 500; i++) {
+        // Add variation with multiple shades of green
+        for (let i = 0; i < 1000; i++) {
             const x = Math.random() * 256;
             const y = Math.random() * 256;
-            const shade = Math.random() * 0.3;
-            context.fillStyle = `rgba(0, 100, 0, ${shade})`;
-            context.fillRect(x, y, 2, 4);
+            const greenShade = Math.floor(Math.random() * 3);
+            
+            if (greenShade === 0) {
+                context.fillStyle = '#3a6b1f';
+            } else if (greenShade === 1) {
+                context.fillStyle = '#4a8228';
+            } else {
+                context.fillStyle = '#1f3d0d';
+            }
+            
+            // Random small patches
+            const size = 1 + Math.random() * 3;
+            context.fillRect(x, y, size, size);
         }
         
-        return new THREE.CanvasTexture(canvas);
+        // Add grass blades with varying colors
+        for (let i = 0; i < 800; i++) {
+            const x = Math.random() * 256;
+            const y = Math.random() * 256;
+            const bladeHeight = 3 + Math.random() * 5;
+            
+            // Darker blades
+            context.fillStyle = `rgba(20, 60, 10, ${0.6 + Math.random() * 0.4})`;
+            context.fillRect(x, y, 1, bladeHeight);
+            
+            // Lighter highlights on some blades
+            if (Math.random() > 0.7) {
+                context.fillStyle = `rgba(80, 120, 40, ${0.5 + Math.random() * 0.3})`;
+                context.fillRect(x + 1, y, 1, bladeHeight * 0.7);
+            }
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
     }
 
     /**
