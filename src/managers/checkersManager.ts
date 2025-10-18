@@ -32,14 +32,34 @@ export class CheckersManager {
     }
 
     /**
-     * Create the blue sphere selection indicator
+     * Create the smooth textured sphere selection indicator
      */
     private createSelectionIndicator(): void {
-        const sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+        const sphereGeometry = new THREE.SphereGeometry(0.3, 32, 32); // Higher segment count for smoother appearance
+        
+        // Create a smooth gradient texture for the sphere
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const context = canvas.getContext('2d')!;
+        
+        // Create radial gradient for smooth appearance
+        const gradient = context.createRadialGradient(128, 128, 30, 128, 128, 128);
+        gradient.addColorStop(0, '#ffffff');
+        gradient.addColorStop(0.5, '#cccccc');
+        gradient.addColorStop(1, '#888888');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 256, 256);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        
         const sphereMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x0000ff, // Blue
-            emissive: 0x0000ff,
-            emissiveIntensity: 0.5
+            map: texture,
+            color: 0xffffff, // Will be tinted based on current player
+            emissive: 0x444444,
+            emissiveIntensity: 0.3,
+            roughness: 0.4,
+            metalness: 0.3
         });
         this.selectionIndicator = new THREE.Mesh(sphereGeometry, sphereMaterial);
         this.selectionIndicator.visible = false; // Hidden by default
@@ -105,9 +125,11 @@ export class CheckersManager {
         
         // Tint the brick texture based on piece color
         if (color === 'black') {
-            material.color = new THREE.Color(0x2a1810); // Dark brown tint for black pieces
-            material.roughness = 0.8;
-            material.metalness = 0.1;
+            material.color = new THREE.Color(0x4a4a4a); // Medium gray tint for black pieces - better contrast
+            material.roughness = 0.7;
+            material.metalness = 0.2;
+            material.emissive = new THREE.Color(0x1a1a1a); // Subtle emissive for visibility
+            material.emissiveIntensity = 0.2;
         } else {
             material.color = new THREE.Color(0xd4a574); // Light tan tint for white pieces
             material.roughness = 0.6;
@@ -190,11 +212,24 @@ export class CheckersManager {
             const piece = this.pieces[this.selectedPieceIndex];
             piece.behavior.onSelect(piece.mesh, true);
             
-            // Show selection indicator above the piece
+            // Show selection indicator above the piece with color representing current player
             if (this.selectionIndicator) {
                 this.selectionIndicator.position.x = piece.mesh.position.x;
                 this.selectionIndicator.position.y = piece.mesh.position.y + 1.0;
                 this.selectionIndicator.position.z = piece.mesh.position.z;
+                
+                // Update indicator color based on current player's turn
+                const material = this.selectionIndicator.material as THREE.MeshStandardMaterial;
+                if (this.currentPlayer === 'black') {
+                    // Dark gray for black player's turn
+                    material.color = new THREE.Color(0x505050);
+                    material.emissive = new THREE.Color(0x202020);
+                } else {
+                    // Light tan/beige for white player's turn
+                    material.color = new THREE.Color(0xe8d4b8);
+                    material.emissive = new THREE.Color(0xb8a080);
+                }
+                
                 this.selectionIndicator.visible = true;
             }
         }
