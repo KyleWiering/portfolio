@@ -87,6 +87,10 @@ export class CheckersRenderer {
     private camera: THREE.PerspectiveCamera;
     private renderer: THREE.WebGLRenderer;
     private container: HTMLElement;
+    private minZoom: number = 6;  // Minimum zoom distance
+    private maxZoom: number = 12; // Maximum zoom distance
+    private zoomSpeed: number = 0.5; // Zoom speed for wheel
+    private lastTouchDistance: number = 0; // For pinch-to-zoom
 
     constructor(containerId: string) {
         const container = document.getElementById(containerId);
@@ -109,9 +113,8 @@ export class CheckersRenderer {
             1000
         );
         
-        // Position camera above the grid, looking down
-        // Using isometric-like angle but from above - zoomed in closer
-        this.camera.position.set(0, 10, 5);
+        // Position camera above the grid, looking down - zoomed in closer
+        this.camera.position.set(0, 8, 4);
         this.camera.lookAt(0, -1, 0);
 
         // Renderer setup
@@ -133,6 +136,9 @@ export class CheckersRenderer {
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
+        
+        // Set up zoom controls
+        this.setupZoomControls();
     }
 
     /**
@@ -182,5 +188,79 @@ export class CheckersRenderer {
      */
     public getCamera(): THREE.PerspectiveCamera {
         return this.camera;
+    }
+
+    /**
+     * Set up zoom controls for mouse wheel and pinch-to-zoom
+     */
+    private setupZoomControls(): void {
+        // Mouse wheel zoom for desktop
+        this.renderer.domElement.addEventListener('wheel', (e: WheelEvent) => {
+            e.preventDefault();
+            
+            // Determine zoom direction
+            const delta = e.deltaY > 0 ? 1 : -1;
+            this.zoom(delta * this.zoomSpeed);
+        }, { passive: false });
+
+        // Touch events for pinch-to-zoom on mobile
+        this.renderer.domElement.addEventListener('touchstart', (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+                // Calculate initial distance between two fingers
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                this.lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+            }
+        }, { passive: true });
+
+        this.renderer.domElement.addEventListener('touchmove', (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                
+                // Calculate current distance between two fingers
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const currentDistance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (this.lastTouchDistance > 0) {
+                    // Calculate zoom based on pinch distance change
+                    const delta = (this.lastTouchDistance - currentDistance) * 0.02;
+                    this.zoom(delta);
+                }
+                
+                this.lastTouchDistance = currentDistance;
+            }
+        }, { passive: false });
+
+        this.renderer.domElement.addEventListener('touchend', (e: TouchEvent) => {
+            if (e.touches.length < 2) {
+                this.lastTouchDistance = 0;
+            }
+        }, { passive: true });
+    }
+
+    /**
+     * Zoom the camera in or out
+     * @param delta - Positive values zoom out, negative values zoom in
+     */
+    private zoom(delta: number): void {
+        // Calculate current distance from camera to target
+        const currentY = this.camera.position.y;
+        const currentZ = this.camera.position.z;
+        const currentDistance = Math.sqrt(currentY * currentY + currentZ * currentZ);
+        
+        // Calculate new distance
+        let newDistance = currentDistance + delta;
+        newDistance = Math.max(this.minZoom, Math.min(this.maxZoom, newDistance));
+        
+        // Calculate the ratio to scale the position
+        const ratio = newDistance / currentDistance;
+        
+        // Update camera position while maintaining the angle
+        this.camera.position.y = currentY * ratio;
+        this.camera.position.z = currentZ * ratio;
+        
+        // Keep looking at the same point
+        this.camera.lookAt(0, -1, 0);
     }
 }
