@@ -68,37 +68,47 @@ export class CheckersManager {
 
     /**
      * Initialize the checkers board with pieces
-     * Setup: 2 rows per side with pieces on ALL squares (16 pieces per side)
+     * Setup: 4 rows per side with pieces on DARK squares only (20 pieces per side)
      * Black pieces start at the top (negative z), white at bottom (positive z)
+     * Dark squares are where (row + col) is odd
      */
     public initializeBoard(): void {
         // Remove any existing pieces
         this.removeAllPieces();
 
-        // Checkers board is 8x8
-        // The board spans from -4 to 4 in both x and z directions (8 unit board, centered at origin)
+        // Checkers board is 10x10
+        // The board spans from -5 to 5 in both x and z directions (10 unit board, centered at origin)
         // Each square is 1 unit to align with the isometric grid
         // Pieces are centered on each square (at 0.5 offset from grid lines)
         
-        // Black pieces: Top 2 rows (z = -3.5, -2.5) - ALL squares
+        // Helper function to check if a square is dark (checkerboard pattern)
+        const isDarkSquare = (row: number, col: number): boolean => {
+            return (row + col) % 2 === 1;
+        };
+        
+        // Black pieces: Top 4 rows (z = -4.5, -3.5, -2.5, -1.5) - DARK squares only
         const blackPositions: GridPosition[] = [];
-        for (let row = 0; row < 2; row++) {
-            const z = -3.5 + row; // Start from -3.5 (center of first row), spacing 1.0
-            for (let col = 0; col < 8; col++) {
-                const x = -3.5 + col; // From -3.5 to 3.5 (centers of squares), spacing 1.0
-                // Place on ALL squares in these 2 rows
-                blackPositions.push({ x, z });
+        for (let row = 0; row < 4; row++) {
+            const z = -4.5 + row; // Start from -4.5 (center of first row), spacing 1.0
+            for (let col = 0; col < 10; col++) {
+                const x = -4.5 + col; // From -4.5 to 4.5 (centers of squares), spacing 1.0
+                // Place only on DARK squares
+                if (isDarkSquare(row, col)) {
+                    blackPositions.push({ x, z });
+                }
             }
         }
 
-        // White pieces: Bottom 2 rows (z = 2.5, 3.5) - ALL squares
+        // White pieces: Bottom 4 rows (z = 1.5, 2.5, 3.5, 4.5) - DARK squares only
         const whitePositions: GridPosition[] = [];
-        for (let row = 0; row < 2; row++) {
-            const z = 2.5 + row; // Start from 2.5 (center of first row), spacing 1.0
-            for (let col = 0; col < 8; col++) {
-                const x = -3.5 + col; // From -3.5 to 3.5 (centers of squares), spacing 1.0
-                // Place on ALL squares in these 2 rows
-                whitePositions.push({ x, z });
+        for (let row = 0; row < 4; row++) {
+            const z = 1.5 + row; // Start from 1.5 (center of first row), spacing 1.0
+            for (let col = 0; col < 10; col++) {
+                const x = -4.5 + col; // From -4.5 to 4.5 (centers of squares), spacing 1.0
+                // Place only on DARK squares (offset by 6 to account for bottom rows)
+                if (isDarkSquare(row + 6, col)) {
+                    whitePositions.push({ x, z });
+                }
             }
         }
 
@@ -119,6 +129,10 @@ export class CheckersManager {
     private createPiece(gridPosition: GridPosition, color: CheckersColor): void {
         // Use brick texture for all pieces
         const pyramid = createPyramid({ useTexture: true });
+        
+        // Enable shadow casting and receiving
+        pyramid.castShadow = true;
+        pyramid.receiveShadow = true;
         
         // Adjust material properties based on color
         const material = pyramid.material as THREE.MeshStandardMaterial;
@@ -266,10 +280,10 @@ export class CheckersManager {
     }
 
     /**
-     * Check if a position is on the board
+     * Check if a position is on the board (10x10 board)
      */
     private isOnBoard(pos: GridPosition): boolean {
-        return pos.x >= -3.5 && pos.x <= 3.5 && pos.z >= -3.5 && pos.z <= 3.5;
+        return pos.x >= -4.5 && pos.x <= 4.5 && pos.z >= -4.5 && pos.z <= 4.5;
     }
 
     /**
@@ -619,19 +633,19 @@ export class CheckersManager {
     }
 
     /**
-     * Check if a piece should be promoted to king
+     * Check if a piece should be promoted to king (10x10 board)
      */
     private checkKingPromotion(piece: CheckersPiece): boolean {
         if (piece.isKing) {
             return false;
         }
 
-        // Black pieces reach the opposite side at z = 3.5
-        // White pieces reach the opposite side at z = -3.5
-        if (piece.color === 'black' && piece.gridPosition.z >= 3.5) {
+        // Black pieces reach the opposite side at z = 4.5
+        // White pieces reach the opposite side at z = -4.5
+        if (piece.color === 'black' && piece.gridPosition.z >= 4.5) {
             return true;
         }
-        if (piece.color === 'white' && piece.gridPosition.z <= -3.5) {
+        if (piece.color === 'white' && piece.gridPosition.z <= -4.5) {
             return true;
         }
 
@@ -686,5 +700,58 @@ export class CheckersManager {
         }
         
         return `${playerText}'s turn`;
+    }
+
+    /**
+     * Check if there's a winner (one player has no pieces left)
+     */
+    public checkWinner(): CheckersColor | null {
+        const blackPieces = this.pieces.filter(p => p.color === 'black').length;
+        const whitePieces = this.pieces.filter(p => p.color === 'white').length;
+        
+        if (blackPieces === 0) {
+            return 'white'; // White wins
+        }
+        if (whitePieces === 0) {
+            return 'black'; // Black wins
+        }
+        
+        return null; // No winner yet
+    }
+
+    /**
+     * Get piece counts for each color
+     */
+    public getPieceCounts(): { black: number, white: number } {
+        const blackPieces = this.pieces.filter(p => p.color === 'black').length;
+        const whitePieces = this.pieces.filter(p => p.color === 'white').length;
+        
+        return { black: blackPieces, white: whitePieces };
+    }
+
+    /**
+     * Check if current player has any valid moves
+     */
+    public hasValidMoves(): boolean {
+        const currentPlayerPieces = this.pieces.filter(p => p.color === this.currentPlayer);
+        
+        for (const piece of currentPlayerPieces) {
+            const moves = this.getValidMoves(piece);
+            if (moves.length > 0) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Skip turn (advance to next player)
+     */
+    public skipTurn(): void {
+        this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+        this.mustCaptureFrom = [];
+        this.deselectPiece();
+        this.checkForForcedCaptures();
     }
 }
