@@ -59,8 +59,8 @@ function createIsometricGrid(width: number, depth: number, spacing: number): THR
  * Create a checkerboard plane with black and white squares
  */
 function createCheckerboardPlane(): THREE.Mesh {
-    // Create an 8x8 checkerboard - 8 units to align with grid spacing of 1 unit per square
-    const boardSize = 8; // 8 units, each square is 1 unit to match isometric grid
+    // Create a 10x10 checkerboard - 10 units to align with grid spacing of 1 unit per square
+    const boardSize = 10; // 10 units, each square is 1 unit to match isometric grid
     const geometry = new THREE.PlaneGeometry(boardSize, boardSize);
     
     // Apply checkerboard texture
@@ -71,6 +71,7 @@ function createCheckerboardPlane(): THREE.Mesh {
     });
     
     const plane = new THREE.Mesh(geometry, material);
+    plane.receiveShadow = true; // Enable receiving shadows
     
     // Rotate to be horizontal and position slightly above the grid
     plane.rotation.x = -Math.PI / 2;
@@ -117,10 +118,12 @@ export class CheckersRenderer {
         this.camera.position.set(0, 8, 4);
         this.camera.lookAt(0, -1, 0);
 
-        // Renderer setup
+        // Renderer setup with shadow support
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
         this.container.appendChild(this.renderer.domElement);
 
         // Add lighting
@@ -142,15 +145,30 @@ export class CheckersRenderer {
     }
 
     /**
-     * Set up scene lighting
+     * Set up scene lighting with shadows
      */
     private setupLighting(): void {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Ambient light for overall scene illumination
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
         this.scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(5, 10, 5);
-        this.scene.add(pointLight);
+        // Directional light from above-right to create shadows
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(8, 12, 8);
+        directionalLight.castShadow = true;
+        
+        // Configure shadow properties
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 30;
+        directionalLight.shadow.camera.left = -12;
+        directionalLight.shadow.camera.right = 12;
+        directionalLight.shadow.camera.top = 12;
+        directionalLight.shadow.camera.bottom = -12;
+        directionalLight.shadow.bias = -0.0001;
+        
+        this.scene.add(directionalLight);
     }
 
     /**

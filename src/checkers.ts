@@ -55,9 +55,9 @@ function initCheckers(): void {
                 const intersectPoint = new THREE.Vector3();
                 raycaster.ray.intersectPlane(boardPlane, intersectPoint);
                 
-                // Snap to nearest half-integer grid position and clamp to board bounds
-                const gridX = Math.max(-3.5, Math.min(3.5, Math.round(intersectPoint.x - 0.5) + 0.5));
-                const gridZ = Math.max(-3.5, Math.min(3.5, Math.round(intersectPoint.z - 0.5) + 0.5));
+                // Snap to nearest half-integer grid position and clamp to board bounds (10x10 board)
+                const gridX = Math.max(-4.5, Math.min(4.5, Math.round(intersectPoint.x - 0.5) + 0.5));
+                const gridZ = Math.max(-4.5, Math.min(4.5, Math.round(intersectPoint.z - 0.5) + 0.5));
                 
                 // Attempt to move piece
                 const result = checkersManager.movePiece({ x: gridX, z: gridZ });
@@ -83,11 +83,19 @@ function initCheckers(): void {
     // Initialize input controller
     inputController.initialize();
     
-    // Remove the texture toggle and model navigation from this version
-    // Hide menu sections that don't apply to checkers
+    // Add stuck button to the menu
     const menuSection = document.querySelector('.menu-section');
     if (menuSection) {
-        menuSection.remove();
+        // Add stuck button
+        const stuckButton = document.createElement('button');
+        stuckButton.id = 'stuck-button';
+        stuckButton.textContent = '⏭️ Skip Turn (Stuck)';
+        stuckButton.style.marginTop = '10px';
+        stuckButton.addEventListener('click', () => {
+            checkersManager.skipTurn();
+            console.log('Turn skipped');
+        });
+        menuSection.appendChild(stuckButton);
     }
     
     // Update settings panel for checkers-specific controls
@@ -100,6 +108,7 @@ function initCheckers(): void {
                 <p><strong>Click Board:</strong> Move to that square</p>
                 <p>• Blue sphere shows selected piece</p>
                 <p id="current-player">• Current turn: <strong>Black</strong></p>
+                <p id="piece-count">• Black: 20 | White: 20</p>
             </div>
             <div class="control-section">
                 <h5>📋 Rules</h5>
@@ -113,9 +122,14 @@ function initCheckers(): void {
             </div>
             <div class="control-section">
                 <h5>ℹ️ Board Setup</h5>
-                <p>• Black pieces: Top (2 rows, all squares)</p>
-                <p>• White pieces: Bottom (2 rows, all squares)</p>
-                <p>• 16 pieces per side (8 per row)</p>
+                <p>• 10x10 board with checkerboard pattern</p>
+                <p>• Black pieces: Top (4 rows, dark squares)</p>
+                <p>• White pieces: Bottom (4 rows, dark squares)</p>
+                <p>• 20 pieces per side (5 per row)</p>
+            </div>
+            <div class="control-section">
+                <h5 id="winner-message" style="display: none; color: #fbbf24;">🏆 Winner</h5>
+                <p id="winner-text" style="display: none;"></p>
             </div>
         `;
     }
@@ -151,6 +165,25 @@ function initCheckers(): void {
         const currentPlayerElement = document.getElementById('current-player');
         if (currentPlayerElement) {
             currentPlayerElement.innerHTML = `• Current: <strong>${checkersManager.getStatusMessage()}</strong>`;
+        }
+        
+        // Update piece count display
+        const pieceCountElement = document.getElementById('piece-count');
+        if (pieceCountElement) {
+            const counts = checkersManager.getPieceCounts();
+            pieceCountElement.innerHTML = `• Black: ${counts.black} | White: ${counts.white}`;
+        }
+        
+        // Check for winner
+        const winner = checkersManager.checkWinner();
+        const winnerMessageElement = document.getElementById('winner-message');
+        const winnerTextElement = document.getElementById('winner-text');
+        
+        if (winner && winnerMessageElement && winnerTextElement) {
+            winnerMessageElement.style.display = 'block';
+            winnerTextElement.style.display = 'block';
+            const winnerName = winner.charAt(0).toUpperCase() + winner.slice(1);
+            winnerTextElement.innerHTML = `<strong>${winnerName}</strong> wins! All opponent pieces have been captured.`;
         }
         
         // Render the scene
