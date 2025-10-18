@@ -106,7 +106,9 @@ export class CheckersRenderer {
 
         // Scene setup
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x000000); // Black background
+        
+        // Create sky gradient background
+        this.createSkyGradient();
 
         // Camera setup - positioned above looking down
         this.camera = new THREE.PerspectiveCamera(
@@ -138,12 +140,181 @@ export class CheckersRenderer {
         // Add checkerboard plane
         const checkerboard = createCheckerboardPlane();
         this.scene.add(checkerboard);
+        
+        // Add wood border around the gameboard
+        const border = this.createWoodBorder();
+        this.scene.add(border);
+        
+        // Add grassy field up to the horizon
+        const grassyField = this.createGrassyField();
+        this.scene.add(grassyField);
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
         
         // Set up zoom controls
         this.setupZoomControls();
+    }
+
+    /**
+     * Create sky gradient background (cloud-free sky from horizon up)
+     */
+    private createSkyGradient(): void {
+        // Create a canvas for the sky gradient
+        const canvas = document.createElement('canvas');
+        canvas.width = 2;
+        canvas.height = 256;
+        const context = canvas.getContext('2d')!;
+        
+        // Create gradient from horizon (light blue) to top (darker blue)
+        const gradient = context.createLinearGradient(0, 0, 0, 256);
+        gradient.addColorStop(0, '#87CEEB'); // Sky blue at horizon
+        gradient.addColorStop(1, '#4A90E2'); // Deeper blue at top
+        
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 2, 256);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        this.scene.background = texture;
+    }
+
+    /**
+     * Create wood border around the gameboard
+     */
+    private createWoodBorder(): THREE.Group {
+        const borderGroup = new THREE.Group();
+        const borderWidth = 0.5;
+        const borderHeight = 0.3;
+        const boardSize = BOARD_SIZE;
+        
+        // Create wood texture
+        const woodTexture = this.createWoodTexture();
+        const woodMaterial = new THREE.MeshStandardMaterial({ 
+            map: woodTexture,
+            color: 0x8B4513, // Brown wood color
+            roughness: 0.8,
+            metalness: 0.1
+        });
+        
+        // Create four border pieces (top, bottom, left, right)
+        const borderThickness = boardSize + borderWidth * 2;
+        
+        // Top border
+        const topBorder = new THREE.Mesh(
+            new THREE.BoxGeometry(borderThickness, borderHeight, borderWidth),
+            woodMaterial
+        );
+        topBorder.position.set(0, -1.9 + borderHeight/2, -boardSize/2 - borderWidth/2);
+        topBorder.receiveShadow = true;
+        borderGroup.add(topBorder);
+        
+        // Bottom border
+        const bottomBorder = new THREE.Mesh(
+            new THREE.BoxGeometry(borderThickness, borderHeight, borderWidth),
+            woodMaterial
+        );
+        bottomBorder.position.set(0, -1.9 + borderHeight/2, boardSize/2 + borderWidth/2);
+        bottomBorder.receiveShadow = true;
+        borderGroup.add(bottomBorder);
+        
+        // Left border
+        const leftBorder = new THREE.Mesh(
+            new THREE.BoxGeometry(borderWidth, borderHeight, boardSize),
+            woodMaterial
+        );
+        leftBorder.position.set(-boardSize/2 - borderWidth/2, -1.9 + borderHeight/2, 0);
+        leftBorder.receiveShadow = true;
+        borderGroup.add(leftBorder);
+        
+        // Right border
+        const rightBorder = new THREE.Mesh(
+            new THREE.BoxGeometry(borderWidth, borderHeight, boardSize),
+            woodMaterial
+        );
+        rightBorder.position.set(boardSize/2 + borderWidth/2, -1.9 + borderHeight/2, 0);
+        rightBorder.receiveShadow = true;
+        borderGroup.add(rightBorder);
+        
+        return borderGroup;
+    }
+
+    /**
+     * Create wood texture
+     */
+    private createWoodTexture(): THREE.Texture {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const context = canvas.getContext('2d')!;
+        
+        // Base wood color
+        context.fillStyle = '#8B4513';
+        context.fillRect(0, 0, 256, 256);
+        
+        // Add wood grain lines
+        for (let i = 0; i < 10; i++) {
+            const y = Math.random() * 256;
+            const darkness = Math.random() * 0.3;
+            context.strokeStyle = `rgba(0, 0, 0, ${darkness})`;
+            context.lineWidth = 1 + Math.random() * 2;
+            context.beginPath();
+            context.moveTo(0, y);
+            context.lineTo(256, y + Math.random() * 20 - 10);
+            context.stroke();
+        }
+        
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    /**
+     * Create grassy field up to the horizon
+     */
+    private createGrassyField(): THREE.Mesh {
+        const fieldSize = 200; // Large field extending to horizon
+        const grassTexture = this.createGrassTexture();
+        grassTexture.wrapS = THREE.RepeatWrapping;
+        grassTexture.wrapT = THREE.RepeatWrapping;
+        grassTexture.repeat.set(50, 50); // Repeat texture for better appearance
+        
+        const grassMaterial = new THREE.MeshStandardMaterial({
+            map: grassTexture,
+            color: 0x228B22, // Forest green
+            roughness: 0.9,
+            metalness: 0.0
+        });
+        
+        const geometry = new THREE.PlaneGeometry(fieldSize, fieldSize);
+        const field = new THREE.Mesh(geometry, grassMaterial);
+        field.receiveShadow = true;
+        field.rotation.x = -Math.PI / 2;
+        field.position.y = -2.1; // Below the board and grid
+        
+        return field;
+    }
+
+    /**
+     * Create grass texture
+     */
+    private createGrassTexture(): THREE.Texture {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const context = canvas.getContext('2d')!;
+        
+        // Base grass color
+        context.fillStyle = '#228B22';
+        context.fillRect(0, 0, 256, 256);
+        
+        // Add random grass blades
+        for (let i = 0; i < 500; i++) {
+            const x = Math.random() * 256;
+            const y = Math.random() * 256;
+            const shade = Math.random() * 0.3;
+            context.fillStyle = `rgba(0, 100, 0, ${shade})`;
+            context.fillRect(x, y, 2, 4);
+        }
+        
+        return new THREE.CanvasTexture(canvas);
     }
 
     /**
