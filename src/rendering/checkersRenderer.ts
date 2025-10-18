@@ -163,18 +163,20 @@ export class CheckersRenderer {
         // Create a canvas for the sky gradient
         const canvas = document.createElement('canvas');
         canvas.width = 2;
-        canvas.height = 256;
+        canvas.height = 512;
         const context = canvas.getContext('2d')!;
         
-        // Create gradient from horizon (light blue) to top (darker blue)
-        const gradient = context.createLinearGradient(0, 0, 0, 256);
-        gradient.addColorStop(0, '#87CEEB'); // Sky blue at horizon
+        // Create gradient from horizon (light blue) to top (deeper blue)
+        const gradient = context.createLinearGradient(0, 0, 0, 512);
+        gradient.addColorStop(0, '#e6f4ff'); // Very light blue at horizon - more visible
+        gradient.addColorStop(0.3, '#87CEEB'); // Sky blue
         gradient.addColorStop(1, '#4A90E2'); // Deeper blue at top
         
         context.fillStyle = gradient;
-        context.fillRect(0, 0, 2, 256);
+        context.fillRect(0, 0, 2, 512);
         
         const texture = new THREE.CanvasTexture(canvas);
+        texture.mapping = THREE.EquirectangularReflectionMapping;
         this.scene.background = texture;
     }
 
@@ -247,20 +249,55 @@ export class CheckersRenderer {
         canvas.height = 256;
         const context = canvas.getContext('2d')!;
         
-        // Base wood color
-        context.fillStyle = '#8B4513';
+        // Create wood grain background
+        context.fillStyle = '#8B4513'; // Saddle brown
         context.fillRect(0, 0, 256, 256);
         
-        // Add wood grain lines
-        for (let i = 0; i < 10; i++) {
+        // Add wood grain patterns with varied colors
+        const grainColors = ['#A0522D', '#6B3410', '#7A3F1A', '#9B5520'];
+        
+        // Vertical wood grain lines
+        for (let x = 0; x < 256; x += 2) {
+            const waveY = Math.sin(x / 10) * 5;
+            const colorIndex = Math.floor(Math.random() * grainColors.length);
+            context.strokeStyle = grainColors[colorIndex];
+            context.lineWidth = 1 + Math.random();
+            context.beginPath();
+            context.moveTo(x, 0);
+            context.lineTo(x + Math.random() * 3 - 1.5, 256);
+            context.stroke();
+        }
+        
+        // Add horizontal grain detail
+        for (let i = 0; i < 20; i++) {
             const y = Math.random() * 256;
-            const darkness = Math.random() * 0.3;
+            const darkness = 0.2 + Math.random() * 0.3;
             context.strokeStyle = `rgba(0, 0, 0, ${darkness})`;
-            context.lineWidth = 1 + Math.random() * 2;
+            context.lineWidth = 1 + Math.random() * 3;
             context.beginPath();
             context.moveTo(0, y);
-            context.lineTo(256, y + Math.random() * 20 - 10);
+            // Create wavy grain line
+            for (let x = 0; x < 256; x += 10) {
+                context.lineTo(x, y + Math.sin(x / 20) * 3);
+            }
             context.stroke();
+        }
+        
+        // Add wood knots
+        for (let i = 0; i < 5; i++) {
+            const knotX = Math.random() * 256;
+            const knotY = Math.random() * 256;
+            const knotSize = 5 + Math.random() * 10;
+            
+            context.fillStyle = 'rgba(50, 25, 10, 0.4)';
+            context.beginPath();
+            context.arc(knotX, knotY, knotSize, 0, Math.PI * 2);
+            context.fill();
+            
+            context.fillStyle = 'rgba(70, 35, 15, 0.3)';
+            context.beginPath();
+            context.arc(knotX, knotY, knotSize * 0.6, 0, Math.PI * 2);
+            context.fill();
         }
         
         return new THREE.CanvasTexture(canvas);
@@ -301,17 +338,30 @@ export class CheckersRenderer {
         canvas.height = 256;
         const context = canvas.getContext('2d')!;
         
-        // Base grass color
+        // Base grass color - forest green (fully opaque)
         context.fillStyle = '#228B22';
         context.fillRect(0, 0, 256, 256);
         
-        // Add random grass blades
-        for (let i = 0; i < 500; i++) {
+        // Add varied grass shades for depth (fully opaque)
+        for (let i = 0; i < 1000; i++) {
             const x = Math.random() * 256;
             const y = Math.random() * 256;
-            const shade = Math.random() * 0.3;
-            context.fillStyle = `rgba(0, 100, 0, ${shade})`;
-            context.fillRect(x, y, 2, 4);
+            // Vary between darker and lighter greens
+            const shade = Math.random();
+            if (shade > 0.5) {
+                context.fillStyle = '#1a7a1a'; // Darker green
+            } else {
+                context.fillStyle = '#2a9d2a'; // Lighter green
+            }
+            context.fillRect(x, y, 2, 3);
+        }
+        
+        // Add grass blade details (fully opaque)
+        for (let i = 0; i < 300; i++) {
+            const x = Math.random() * 256;
+            const y = Math.random() * 256;
+            context.fillStyle = '#1d6b1d'; // Medium-dark green for blades
+            context.fillRect(x, y, 1, 4);
         }
         
         return new THREE.CanvasTexture(canvas);
