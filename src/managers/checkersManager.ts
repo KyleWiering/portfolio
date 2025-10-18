@@ -23,7 +23,7 @@ export class CheckersManager {
     private selectedPieceIndex: number = -1;
     private gridSpacing: number = 1;
     private selectionIndicator: THREE.Group | null = null;
-    private currentPlayer: CheckersColor = 'black'; // Black goes first
+    private currentPlayer: CheckersColor = 'white'; // White goes first
     private validMovesIndicators: THREE.Mesh[] = [];
     private mustCaptureFrom: number[] = []; // Indices of pieces that must capture
 
@@ -513,6 +513,12 @@ export class CheckersManager {
             if (result.captured && result.captured.length > 0 && this.canCapture(piece)) {
                 // Must continue jumping - don't switch turns
                 this.mustCaptureFrom = [this.selectedPieceIndex];
+                
+                // Update selection indicator to follow the piece to its new position
+                if (this.selectionIndicator) {
+                    this.selectionIndicator.position.x = piece.mesh.position.x;
+                    this.selectionIndicator.position.z = piece.mesh.position.z;
+                }
             } else {
                 // Switch turns
                 this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
