@@ -1,6 +1,7 @@
 // Checkers Renderer - Handles WebGL scene setup with overhead camera view
 import * as THREE from 'three';
 import { createCheckerboardTexture } from '../core/textures/textureGenerator';
+import { BOARD_SIZE, DEFAULT_SHADOW_MAP_SIZE, ShadowMapConfig } from '../core/constants/boardConfig';
 
 /**
  * Create an isometric grid with dashed lines
@@ -59,9 +60,8 @@ function createIsometricGrid(width: number, depth: number, spacing: number): THR
  * Create a checkerboard plane with black and white squares
  */
 function createCheckerboardPlane(): THREE.Mesh {
-    // Create a 10x10 checkerboard - 10 units to align with grid spacing of 1 unit per square
-    const boardSize = 10; // 10 units, each square is 1 unit to match isometric grid
-    const geometry = new THREE.PlaneGeometry(boardSize, boardSize);
+    // Create a checkerboard - each square is 1 unit to match isometric grid
+    const geometry = new THREE.PlaneGeometry(BOARD_SIZE, BOARD_SIZE);
     
     // Apply checkerboard texture
     const texture = createCheckerboardTexture();
@@ -92,8 +92,10 @@ export class CheckersRenderer {
     private maxZoom: number = 12; // Maximum zoom distance
     private zoomSpeed: number = 0.5; // Zoom speed for wheel
     private lastTouchDistance: number = 0; // For pinch-to-zoom
+    private shadowMapSize: ShadowMapConfig; // Configurable shadow map size
 
-    constructor(containerId: string) {
+    constructor(containerId: string, shadowMapSize: ShadowMapConfig = DEFAULT_SHADOW_MAP_SIZE) {
+        this.shadowMapSize = shadowMapSize;
         const container = document.getElementById(containerId);
         
         if (!container) {
@@ -158,8 +160,8 @@ export class CheckersRenderer {
         directionalLight.castShadow = true;
         
         // Configure shadow properties
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.mapSize.width = this.shadowMapSize.width;
+        directionalLight.shadow.mapSize.height = this.shadowMapSize.height;
         directionalLight.shadow.camera.near = 0.5;
         directionalLight.shadow.camera.far = 30;
         directionalLight.shadow.camera.left = -12;

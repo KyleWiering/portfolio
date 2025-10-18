@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { CheckersRenderer } from './rendering/checkersRenderer';
 import { CheckersManager } from './managers/checkersManager';
 import { InputController } from './controllers/inputController';
+import { BOARD_MIN, BOARD_MAX } from './core/constants/boardConfig';
 
 /**
  * Initialize the checkers application
@@ -55,9 +56,9 @@ function initCheckers(): void {
                 const intersectPoint = new THREE.Vector3();
                 raycaster.ray.intersectPlane(boardPlane, intersectPoint);
                 
-                // Snap to nearest half-integer grid position and clamp to board bounds (10x10 board)
-                const gridX = Math.max(-4.5, Math.min(4.5, Math.round(intersectPoint.x - 0.5) + 0.5));
-                const gridZ = Math.max(-4.5, Math.min(4.5, Math.round(intersectPoint.z - 0.5) + 0.5));
+                // Snap to nearest half-integer grid position and clamp to board bounds
+                const gridX = Math.max(BOARD_MIN, Math.min(BOARD_MAX, Math.round(intersectPoint.x - 0.5) + 0.5));
+                const gridZ = Math.max(BOARD_MIN, Math.min(BOARD_MAX, Math.round(intersectPoint.z - 0.5) + 0.5));
                 
                 // Attempt to move piece
                 const result = checkersManager.movePiece({ x: gridX, z: gridZ });
@@ -89,7 +90,9 @@ function initCheckers(): void {
         // Add stuck button
         const stuckButton = document.createElement('button');
         stuckButton.id = 'stuck-button';
+        stuckButton.type = 'button';
         stuckButton.textContent = '⏭️ Skip Turn (Stuck)';
+        stuckButton.setAttribute('aria-label', 'Skip turn when no valid moves are available');
         stuckButton.style.marginTop = '10px';
         stuckButton.addEventListener('click', () => {
             checkersManager.skipTurn();
@@ -154,6 +157,57 @@ function initCheckers(): void {
     // Initialize the checkers board
     checkersManager.initializeBoard();
 
+    // Track previous state to optimize HUD updates
+    let previousState = {
+        statusMessage: checkersManager.getStatusMessage(),
+        pieceCounts: checkersManager.getPieceCounts(),
+        winner: checkersManager.checkWinner()
+    };
+
+    // Update HUD based on current state
+    function updateHUD(): void {
+        const currentState = {
+            statusMessage: checkersManager.getStatusMessage(),
+            pieceCounts: checkersManager.getPieceCounts(),
+            winner: checkersManager.checkWinner()
+        };
+
+        // Update current player display only if changed
+        if (currentState.statusMessage !== previousState.statusMessage) {
+            const currentPlayerElement = document.getElementById('current-player');
+            if (currentPlayerElement) {
+                currentPlayerElement.innerHTML = `• Current: <strong>${currentState.statusMessage}</strong>`;
+            }
+        }
+
+        // Update piece count display only if changed
+        if (currentState.pieceCounts.black !== previousState.pieceCounts.black || 
+            currentState.pieceCounts.white !== previousState.pieceCounts.white) {
+            const pieceCountElement = document.getElementById('piece-count');
+            if (pieceCountElement) {
+                pieceCountElement.innerHTML = `• Black: ${currentState.pieceCounts.black} | White: ${currentState.pieceCounts.white}`;
+            }
+        }
+
+        // Check for winner only if changed
+        if (currentState.winner !== previousState.winner && currentState.winner) {
+            const winnerMessageElement = document.getElementById('winner-message');
+            const winnerTextElement = document.getElementById('winner-text');
+            
+            if (winnerMessageElement && winnerTextElement) {
+                winnerMessageElement.style.display = 'block';
+                winnerTextElement.style.display = 'block';
+                const winnerName = currentState.winner.charAt(0).toUpperCase() + currentState.winner.slice(1);
+                winnerTextElement.innerHTML = `<strong>${winnerName}</strong> wins! All opponent pieces have been captured.`;
+            }
+        }
+
+        previousState = currentState;
+    }
+
+    // Initial HUD update
+    updateHUD();
+
     // Animation loop
     function animate(): void {
         requestAnimationFrame(animate);
@@ -161,30 +215,8 @@ function initCheckers(): void {
         // Animate pieces (currently does nothing since rotation is disabled)
         checkersManager.animatePieces();
         
-        // Update current player display
-        const currentPlayerElement = document.getElementById('current-player');
-        if (currentPlayerElement) {
-            currentPlayerElement.innerHTML = `• Current: <strong>${checkersManager.getStatusMessage()}</strong>`;
-        }
-        
-        // Update piece count display
-        const pieceCountElement = document.getElementById('piece-count');
-        if (pieceCountElement) {
-            const counts = checkersManager.getPieceCounts();
-            pieceCountElement.innerHTML = `• Black: ${counts.black} | White: ${counts.white}`;
-        }
-        
-        // Check for winner
-        const winner = checkersManager.checkWinner();
-        const winnerMessageElement = document.getElementById('winner-message');
-        const winnerTextElement = document.getElementById('winner-text');
-        
-        if (winner && winnerMessageElement && winnerTextElement) {
-            winnerMessageElement.style.display = 'block';
-            winnerTextElement.style.display = 'block';
-            const winnerName = winner.charAt(0).toUpperCase() + winner.slice(1);
-            winnerTextElement.innerHTML = `<strong>${winnerName}</strong> wins! All opponent pieces have been captured.`;
-        }
+        // Update HUD only when state changes
+        updateHUD();
         
         // Render the scene
         renderer.render();

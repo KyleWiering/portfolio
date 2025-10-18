@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { createPyramid } from '../objects/geometries';
 import { CheckersPieceBehavior } from '../behaviors/checkersBehavior';
 import { GridPosition, CheckersColor, MoveResult } from '../core/types';
+import { BOARD_MIN, BOARD_MAX, PIECES_PER_SIDE_ROWS, WHITE_PIECE_START_ROW } from '../core/constants/boardConfig';
 
 interface CheckersPiece {
     mesh: THREE.Mesh;
@@ -86,12 +87,12 @@ export class CheckersManager {
             return (row + col) % 2 === 1;
         };
         
-        // Black pieces: Top 4 rows (z = -4.5, -3.5, -2.5, -1.5) - DARK squares only
+        // Black pieces: Top rows (DARK squares only)
         const blackPositions: GridPosition[] = [];
-        for (let row = 0; row < 4; row++) {
-            const z = -4.5 + row; // Start from -4.5 (center of first row), spacing 1.0
+        for (let row = 0; row < PIECES_PER_SIDE_ROWS; row++) {
+            const z = BOARD_MIN + row; // Start from BOARD_MIN (center of first row), spacing 1.0
             for (let col = 0; col < 10; col++) {
-                const x = -4.5 + col; // From -4.5 to 4.5 (centers of squares), spacing 1.0
+                const x = BOARD_MIN + col; // From BOARD_MIN to BOARD_MAX (centers of squares), spacing 1.0
                 // Place only on DARK squares
                 if (isDarkSquare(row, col)) {
                     blackPositions.push({ x, z });
@@ -99,14 +100,14 @@ export class CheckersManager {
             }
         }
 
-        // White pieces: Bottom 4 rows (z = 1.5, 2.5, 3.5, 4.5) - DARK squares only
+        // White pieces: Bottom rows (DARK squares only)
         const whitePositions: GridPosition[] = [];
-        for (let row = 0; row < 4; row++) {
-            const z = 1.5 + row; // Start from 1.5 (center of first row), spacing 1.0
+        for (let row = 0; row < PIECES_PER_SIDE_ROWS; row++) {
+            const z = BOARD_MIN + WHITE_PIECE_START_ROW + row; // Start from white pieces start row
             for (let col = 0; col < 10; col++) {
-                const x = -4.5 + col; // From -4.5 to 4.5 (centers of squares), spacing 1.0
-                // Place only on DARK squares (offset by 6 to account for bottom rows)
-                if (isDarkSquare(row + 6, col)) {
+                const x = BOARD_MIN + col; // From BOARD_MIN to BOARD_MAX (centers of squares), spacing 1.0
+                // Place only on DARK squares (use WHITE_PIECE_START_ROW to account for bottom rows)
+                if (isDarkSquare(row + WHITE_PIECE_START_ROW, col)) {
                     whitePositions.push({ x, z });
                 }
             }
@@ -280,10 +281,10 @@ export class CheckersManager {
     }
 
     /**
-     * Check if a position is on the board (10x10 board)
+     * Check if a position is on the board
      */
     private isOnBoard(pos: GridPosition): boolean {
-        return pos.x >= -4.5 && pos.x <= 4.5 && pos.z >= -4.5 && pos.z <= 4.5;
+        return pos.x >= BOARD_MIN && pos.x <= BOARD_MAX && pos.z >= BOARD_MIN && pos.z <= BOARD_MAX;
     }
 
     /**
@@ -633,19 +634,19 @@ export class CheckersManager {
     }
 
     /**
-     * Check if a piece should be promoted to king (10x10 board)
+     * Check if a piece should be promoted to king
      */
     private checkKingPromotion(piece: CheckersPiece): boolean {
         if (piece.isKing) {
             return false;
         }
 
-        // Black pieces reach the opposite side at z = 4.5
-        // White pieces reach the opposite side at z = -4.5
-        if (piece.color === 'black' && piece.gridPosition.z >= 4.5) {
+        // Black pieces reach the opposite side at BOARD_MAX
+        // White pieces reach the opposite side at BOARD_MIN
+        if (piece.color === 'black' && piece.gridPosition.z >= BOARD_MAX) {
             return true;
         }
-        if (piece.color === 'white' && piece.gridPosition.z <= -4.5) {
+        if (piece.color === 'white' && piece.gridPosition.z <= BOARD_MIN) {
             return true;
         }
 
