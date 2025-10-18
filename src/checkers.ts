@@ -20,6 +20,9 @@ function initCheckers(): void {
     // Initialize input controller for piece selection via tap/click
     const inputController = new InputController(renderer.getCanvas());
     
+    // Enable panning by default (when no piece is selected)
+    renderer.setPanningEnabled(true);
+
     // Set up tap event for piece selection via raycasting
     inputController.onTapEvent((x: number, y: number) => {
         const raycaster = new THREE.Raycaster();
@@ -49,34 +52,39 @@ function initCheckers(): void {
                 checkersManager.selectPieceByIndex(pieceIndex);
             }
         } else {
-            // Clicked on empty space - try to move selected piece here
+            // Clicked on empty space
             if (checkersManager.getSelectedPieceIndex() >= 0) {
                 // Cast ray to the board plane to get grid coordinates
                 const boardPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.9);
                 const intersectPoint = new THREE.Vector3();
                 raycaster.ray.intersectPlane(boardPlane, intersectPoint);
                 
-                // Snap to nearest half-integer grid position and clamp to board bounds
-                const gridX = Math.max(BOARD_MIN, Math.min(BOARD_MAX, Math.round(intersectPoint.x - 0.5) + 0.5));
-                const gridZ = Math.max(BOARD_MIN, Math.min(BOARD_MAX, Math.round(intersectPoint.z - 0.5) + 0.5));
-                
-                // Attempt to move piece
-                const result = checkersManager.movePiece({ x: gridX, z: gridZ });
-                
-                if (!result.success && result.message) {
-                    console.log('Move failed:', result.message);
-                } else if (result.success) {
-                    console.log('Move successful!');
-                    if (result.captured && result.captured.length > 0) {
-                        console.log('Captured pieces:', result.captured.length);
+                // Check if click is within board bounds
+                if (intersectPoint.x >= BOARD_MIN && intersectPoint.x <= BOARD_MAX &&
+                    intersectPoint.z >= BOARD_MIN && intersectPoint.z <= BOARD_MAX) {
+                    // Clicked on board - try to move selected piece here
+                    // Snap to nearest half-integer grid position and clamp to board bounds
+                    const gridX = Math.max(BOARD_MIN, Math.min(BOARD_MAX, Math.round(intersectPoint.x - 0.5) + 0.5));
+                    const gridZ = Math.max(BOARD_MIN, Math.min(BOARD_MAX, Math.round(intersectPoint.z - 0.5) + 0.5));
+                    
+                    // Attempt to move piece
+                    const result = checkersManager.movePiece({ x: gridX, z: gridZ });
+                    
+                    if (!result.success && result.message) {
+                        console.log('Move failed:', result.message);
+                    } else if (result.success) {
+                        console.log('Move successful!');
+                        if (result.captured && result.captured.length > 0) {
+                            console.log('Captured pieces:', result.captured.length);
+                        }
+                        if (result.becameKing) {
+                            console.log('Piece became a king!');
+                        }
                     }
-                    if (result.becameKing) {
-                        console.log('Piece became a king!');
-                    }
+                } else {
+                    // Clicked outside board - deselect piece
+                    checkersManager.deselectPiece();
                 }
-            } else {
-                // Deselect if no piece selected
-                checkersManager.deselectPiece();
             }
         }
     });

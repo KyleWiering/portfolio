@@ -93,6 +93,11 @@ export class CheckersRenderer {
     private zoomSpeed: number = 0.5; // Zoom speed for wheel
     private lastTouchDistance: number = 0; // For pinch-to-zoom
     private shadowMapSize: ShadowMapConfig; // Configurable shadow map size
+    private isPanning: boolean = false; // Is currently panning
+    private lastPanX: number = 0; // Last pan X position
+    private lastPanY: number = 0; // Last pan Y position
+    private cameraTarget: THREE.Vector3 = new THREE.Vector3(0, -1, 0); // Camera look-at target
+    private panSpeed: number = 0.01; // Pan speed multiplier
 
     constructor(containerId: string, shadowMapSize: ShadowMapConfig = DEFAULT_SHADOW_MAP_SIZE) {
         this.shadowMapSize = shadowMapSize;
@@ -133,8 +138,9 @@ export class CheckersRenderer {
         // Add lighting
         this.setupLighting();
 
-        // Add isometric grid
+        // Add isometric grid (hidden)
         const gridHelper = createIsometricGrid(20, 20, 1);
+        gridHelper.visible = false; // Hide the grid
         this.scene.add(gridHelper);
         
         // Add checkerboard plane
@@ -148,12 +154,23 @@ export class CheckersRenderer {
         // Add grassy field up to the horizon
         const grassyField = this.createGrassyField();
         this.scene.add(grassyField);
+        
+        // Add water pool around the board edges with waterfalls
+        const waterPool = this.createWaterPool();
+        this.scene.add(waterPool);
+        
+        // Add cragged edges around the board
+        const craggedEdges = this.createCraggedEdges();
+        this.scene.add(craggedEdges);
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
         
         // Set up zoom controls
         this.setupZoomControls();
+        
+        // Set up pan controls
+        this.setupPanControls();
     }
 
     /**
@@ -414,6 +431,236 @@ export class CheckersRenderer {
     }
 
     /**
+     * Create water pool around the board edges
+     */
+    private createWaterPool(): THREE.Group {
+        const poolGroup = new THREE.Group();
+        const boardSize = BOARD_SIZE;
+        const borderWidth = 0.5;
+        const poolWidth = 3; // Width of the water pool
+        const poolDepth = 1; // Depth below the board
+        
+        // Create water material with transparency and reflection
+        const waterTexture = this.createWaterTexture();
+        const waterMaterial = new THREE.MeshStandardMaterial({
+            map: waterTexture,
+            color: 0x1e90ff, // Dodger blue
+            transparent: true,
+            opacity: 0.7,
+            roughness: 0.1,
+            metalness: 0.3,
+            emissive: new THREE.Color(0x0066cc),
+            emissiveIntensity: 0.2
+        });
+        
+        const totalBoardWidth = boardSize + borderWidth * 2;
+        const outerEdge = totalBoardWidth / 2;
+        const poolStart = outerEdge;
+        const poolEnd = outerEdge + poolWidth;
+        
+        // Create four water strips around the board (top, bottom, left, right)
+        // Top water strip
+        const topWater = new THREE.Mesh(
+            new THREE.PlaneGeometry(totalBoardWidth + poolWidth * 2, poolWidth),
+            waterMaterial
+        );
+        topWater.rotation.x = -Math.PI / 2;
+        topWater.position.set(0, -2.0 - poolDepth, -poolStart - poolWidth / 2);
+        topWater.receiveShadow = true;
+        poolGroup.add(topWater);
+        
+        // Bottom water strip
+        const bottomWater = new THREE.Mesh(
+            new THREE.PlaneGeometry(totalBoardWidth + poolWidth * 2, poolWidth),
+            waterMaterial
+        );
+        bottomWater.rotation.x = -Math.PI / 2;
+        bottomWater.position.set(0, -2.0 - poolDepth, poolStart + poolWidth / 2);
+        bottomWater.receiveShadow = true;
+        poolGroup.add(bottomWater);
+        
+        // Left water strip
+        const leftWater = new THREE.Mesh(
+            new THREE.PlaneGeometry(poolWidth, totalBoardWidth),
+            waterMaterial
+        );
+        leftWater.rotation.x = -Math.PI / 2;
+        leftWater.position.set(-poolStart - poolWidth / 2, -2.0 - poolDepth, 0);
+        leftWater.receiveShadow = true;
+        poolGroup.add(leftWater);
+        
+        // Right water strip
+        const rightWater = new THREE.Mesh(
+            new THREE.PlaneGeometry(poolWidth, totalBoardWidth),
+            waterMaterial
+        );
+        rightWater.rotation.x = -Math.PI / 2;
+        rightWater.position.set(poolStart + poolWidth / 2, -2.0 - poolDepth, 0);
+        rightWater.receiveShadow = true;
+        poolGroup.add(rightWater);
+        
+        // Add waterfall effects at the edges
+        this.addWaterfalls(poolGroup, poolEnd, poolDepth);
+        
+        return poolGroup;
+    }
+
+    /**
+     * Create water texture
+     */
+    private createWaterTexture(): THREE.Texture {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const context = canvas.getContext('2d')!;
+        
+        // Base water color - blue with variations
+        const gradient = context.createLinearGradient(0, 0, 512, 512);
+        gradient.addColorStop(0, '#1e90ff');
+        gradient.addColorStop(0.5, '#4169e1');
+        gradient.addColorStop(1, '#0066cc');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 512, 512);
+        
+        // Add water ripples
+        for (let i = 0; i < 50; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const radius = 5 + Math.random() * 20;
+            
+            const rippleGradient = context.createRadialGradient(x, y, 0, x, y, radius);
+            rippleGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            rippleGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+            rippleGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            context.fillStyle = rippleGradient;
+            context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(4, 4);
+        return texture;
+    }
+
+    /**
+     * Add waterfall effects at the edges
+     */
+    private addWaterfalls(poolGroup: THREE.Group, poolEnd: number, poolDepth: number): void {
+        // Create waterfall material (more transparent, flowing appearance)
+        const waterfallMaterial = new THREE.MeshStandardMaterial({
+            color: 0x87ceeb, // Sky blue
+            transparent: true,
+            opacity: 0.5,
+            roughness: 0.3,
+            metalness: 0.1
+        });
+        
+        const waterfallHeight = 2;
+        const waterfallThickness = 0.1;
+        const boardSize = BOARD_SIZE;
+        const borderWidth = 0.5;
+        const totalBoardWidth = boardSize + borderWidth * 2;
+        
+        // Top waterfall
+        const topWaterfall = new THREE.Mesh(
+            new THREE.PlaneGeometry(totalBoardWidth, waterfallHeight),
+            waterfallMaterial
+        );
+        topWaterfall.position.set(0, -2.0 - poolDepth + waterfallHeight / 2, -poolEnd);
+        poolGroup.add(topWaterfall);
+        
+        // Bottom waterfall
+        const bottomWaterfall = new THREE.Mesh(
+            new THREE.PlaneGeometry(totalBoardWidth, waterfallHeight),
+            waterfallMaterial
+        );
+        bottomWaterfall.position.set(0, -2.0 - poolDepth + waterfallHeight / 2, poolEnd);
+        poolGroup.add(bottomWaterfall);
+        
+        // Left waterfall
+        const leftWaterfall = new THREE.Mesh(
+            new THREE.PlaneGeometry(waterfallHeight, totalBoardWidth),
+            waterfallMaterial
+        );
+        leftWaterfall.rotation.y = Math.PI / 2;
+        leftWaterfall.position.set(-poolEnd, -2.0 - poolDepth + waterfallHeight / 2, 0);
+        poolGroup.add(leftWaterfall);
+        
+        // Right waterfall
+        const rightWaterfall = new THREE.Mesh(
+            new THREE.PlaneGeometry(waterfallHeight, totalBoardWidth),
+            waterfallMaterial
+        );
+        rightWaterfall.rotation.y = Math.PI / 2;
+        rightWaterfall.position.set(poolEnd, -2.0 - poolDepth + waterfallHeight / 2, 0);
+        poolGroup.add(rightWaterfall);
+    }
+
+    /**
+     * Create cragged edges around the board
+     */
+    private createCraggedEdges(): THREE.Group {
+        const cragGroup = new THREE.Group();
+        const boardSize = BOARD_SIZE;
+        const borderWidth = 0.5;
+        const poolWidth = 3;
+        const edgePosition = (boardSize + borderWidth * 2) / 2 + poolWidth;
+        
+        // Create stone/rock material for cragged edges
+        const stoneMaterial = new THREE.MeshStandardMaterial({
+            color: 0x696969, // Dim gray
+            roughness: 0.9,
+            metalness: 0.1
+        });
+        
+        // Create random cragged rocks around the perimeter
+        const numCrags = 40;
+        for (let i = 0; i < numCrags; i++) {
+            const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+            let x = 0, z = 0;
+            
+            switch(side) {
+                case 0: // Top
+                    x = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    z = -edgePosition + (Math.random() - 0.5) * 2;
+                    break;
+                case 1: // Right
+                    x = edgePosition + (Math.random() - 0.5) * 2;
+                    z = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    break;
+                case 2: // Bottom
+                    x = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    z = edgePosition + (Math.random() - 0.5) * 2;
+                    break;
+                case 3: // Left
+                    x = -edgePosition + (Math.random() - 0.5) * 2;
+                    z = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    break;
+            }
+            
+            // Create irregular rock shapes using boxes with random sizes
+            const width = 0.3 + Math.random() * 0.5;
+            const height = 0.5 + Math.random() * 1.5;
+            const depth = 0.3 + Math.random() * 0.5;
+            
+            const crag = new THREE.Mesh(
+                new THREE.BoxGeometry(width, height, depth),
+                stoneMaterial
+            );
+            
+            crag.position.set(x, -2.0 + height / 2, z);
+            crag.rotation.y = Math.random() * Math.PI * 2;
+            crag.castShadow = true;
+            crag.receiveShadow = true;
+            
+            cragGroup.add(crag);
+        }
+        
+        return cragGroup;
+    }
+
+    /**
      * Set up scene lighting with shadows
      */
     private setupLighting(): void {
@@ -475,6 +722,110 @@ export class CheckersRenderer {
      */
     public getCamera(): THREE.PerspectiveCamera {
         return this.camera;
+    }
+
+    /**
+     * Enable or disable panning
+     */
+    public setPanningEnabled(enabled: boolean): void {
+        this.isPanning = enabled;
+    }
+
+    /**
+     * Set up pan controls for mouse drag
+     */
+    private setupPanControls(): void {
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+
+        // Mouse pan controls
+        this.renderer.domElement.addEventListener('mousedown', (e: MouseEvent) => {
+            // Only pan with right mouse button or middle mouse button
+            if (e.button === 1 || e.button === 2) {
+                e.preventDefault();
+                isDragging = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                this.lastPanX = e.clientX;
+                this.lastPanY = e.clientY;
+            }
+        });
+
+        this.renderer.domElement.addEventListener('mousemove', (e: MouseEvent) => {
+            if (isDragging) {
+                e.preventDefault();
+                const deltaX = e.clientX - this.lastPanX;
+                const deltaY = e.clientY - this.lastPanY;
+                this.pan(deltaX, deltaY);
+                this.lastPanX = e.clientX;
+                this.lastPanY = e.clientY;
+            }
+        });
+
+        this.renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Prevent context menu on right click
+        this.renderer.domElement.addEventListener('contextmenu', (e: Event) => {
+            e.preventDefault();
+        });
+
+        // Touch pan controls (two-finger pan when not pinching)
+        let touchPanStartX = 0;
+        let touchPanStartY = 0;
+        let isTouchPanning = false;
+
+        this.renderer.domElement.addEventListener('touchmove', (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+                // Calculate midpoint for panning
+                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+                if (!isTouchPanning) {
+                    isTouchPanning = true;
+                    touchPanStartX = midX;
+                    touchPanStartY = midY;
+                } else {
+                    const deltaX = midX - touchPanStartX;
+                    const deltaY = midY - touchPanStartY;
+                    this.pan(deltaX * 0.5, deltaY * 0.5);
+                    touchPanStartX = midX;
+                    touchPanStartY = midY;
+                }
+            }
+        });
+
+        this.renderer.domElement.addEventListener('touchend', () => {
+            isTouchPanning = false;
+        });
+    }
+
+    /**
+     * Pan the camera
+     * @param deltaX - Horizontal pan amount
+     * @param deltaY - Vertical pan amount
+     */
+    private pan(deltaX: number, deltaY: number): void {
+        // Get the camera's right and up vectors
+        const right = new THREE.Vector3();
+        const up = new THREE.Vector3();
+        
+        this.camera.getWorldDirection(right);
+        right.cross(this.camera.up).normalize();
+        up.copy(this.camera.up).normalize();
+
+        // Calculate pan amount based on camera distance
+        const distance = this.camera.position.distanceTo(this.cameraTarget);
+        const panAmount = distance * this.panSpeed;
+
+        // Pan the target
+        this.cameraTarget.addScaledVector(right, -deltaX * panAmount);
+        this.cameraTarget.addScaledVector(up, deltaY * panAmount);
+
+        // Update camera to look at new target
+        this.camera.lookAt(this.cameraTarget);
     }
 
     /**
@@ -547,7 +898,7 @@ export class CheckersRenderer {
         this.camera.position.y = currentY * ratio;
         this.camera.position.z = currentZ * ratio;
         
-        // Keep looking at the same point
-        this.camera.lookAt(0, -1, 0);
+        // Keep looking at the target point
+        this.camera.lookAt(this.cameraTarget);
     }
 }

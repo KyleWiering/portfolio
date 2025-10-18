@@ -7,8 +7,8 @@ import { ObjectConfig } from '../../core/types';
 import { createCheckeredTexture, createBrickTexture } from '../../core/textures/textureGenerator';
 
 export function createPyramid(config: ObjectConfig): THREE.Mesh {
-    // Taller pyramid for better shadows: increased height by 50%
-    const geometry = new THREE.ConeGeometry(0.525, 1.3125, 4);
+    // Taller pyramid for better shadows: increased height by 50%, then 30% larger overall
+    const geometry = new THREE.ConeGeometry(0.525 * 1.3, 1.3125 * 1.3, 4);
     
     let material: THREE.Material;
     
