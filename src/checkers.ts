@@ -109,7 +109,7 @@ function initCheckers(): void {
                 <h5>🎯 How to Play</h5>
                 <p><strong>Click/Tap:</strong> Select your piece</p>
                 <p><strong>Click Board:</strong> Move to that square</p>
-                <p>• Blue sphere shows selected piece</p>
+                <p>• Hourglass shows selected piece</p>
                 <p id="current-player">• Current turn: <strong>Black</strong></p>
                 <p id="piece-count">• Black: 20 | White: 20</p>
             </div>
@@ -135,6 +135,48 @@ function initCheckers(): void {
                 <p id="winner-text" style="display: none;"></p>
             </div>
         `;
+    }
+
+    // Set up menu toggle functionality
+    const menuToggle = document.getElementById('menu-toggle');
+    const webglMenu = document.getElementById('webgl-menu');
+
+    if (menuToggle && webglMenu) {
+        menuToggle.addEventListener('click', () => {
+            webglMenu.classList.toggle('collapsed');
+            // Update toggle button icon
+            menuToggle.textContent = webglMenu.classList.contains('collapsed') ? '☰' : '✕';
+        });
+    }
+
+    // Set up fullscreen functionality
+    const fullscreenButton = document.getElementById('fullscreen-button');
+    
+    if (fullscreenButton) {
+        fullscreenButton.addEventListener('click', () => {
+            const gameContainer = document.getElementById('game-container');
+            
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                if (gameContainer?.requestFullscreen) {
+                    gameContainer.requestFullscreen();
+                }
+                fullscreenButton.textContent = '⛶ Exit Fullscreen';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+                fullscreenButton.textContent = '⛶ Fullscreen';
+            }
+        });
+
+        // Update button text when fullscreen changes
+        document.addEventListener('fullscreenchange', () => {
+            if (fullscreenButton) {
+                fullscreenButton.textContent = document.fullscreenElement ? '⛶ Exit Fullscreen' : '⛶ Fullscreen';
+            }
+        });
     }
 
     // Set up settings panel

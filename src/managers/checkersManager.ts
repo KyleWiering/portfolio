@@ -1,6 +1,6 @@
 // Checkers Manager - Handles checkers piece creation and management
 import * as THREE from 'three';
-import { createPyramid } from '../objects/geometries';
+import { createPyramid, createHourglass } from '../objects/geometries';
 import { CheckersPieceBehavior } from '../behaviors/checkersBehavior';
 import { GridPosition, CheckersColor, MoveResult } from '../core/types';
 import { BOARD_MIN, BOARD_MAX, PIECES_PER_SIDE_ROWS, WHITE_PIECE_START_ROW } from '../core/constants/boardConfig';
@@ -22,7 +22,7 @@ export class CheckersManager {
     private pieces: CheckersPiece[] = [];
     private selectedPieceIndex: number = -1;
     private gridSpacing: number = 1;
-    private selectionIndicator: THREE.Mesh | null = null;
+    private selectionIndicator: THREE.Group | null = null;
     private currentPlayer: CheckersColor = 'black'; // Black goes first
     private validMovesIndicators: THREE.Mesh[] = [];
     private mustCaptureFrom: number[] = []; // Indices of pieces that must capture
@@ -33,36 +33,10 @@ export class CheckersManager {
     }
 
     /**
-     * Create the smooth textured sphere selection indicator
+     * Create the inverted hourglass selection indicator (two pyramids base to base)
      */
     private createSelectionIndicator(): void {
-        const sphereGeometry = new THREE.SphereGeometry(0.3, 32, 32); // Higher segment count for smoother appearance
-        
-        // Create a smooth gradient texture for the sphere
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
-        const context = canvas.getContext('2d')!;
-        
-        // Create radial gradient for smooth appearance
-        const gradient = context.createRadialGradient(128, 128, 30, 128, 128, 128);
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.5, '#cccccc');
-        gradient.addColorStop(1, '#888888');
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, 256, 256);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        
-        const sphereMaterial = new THREE.MeshStandardMaterial({ 
-            map: texture,
-            color: 0xffffff, // Will be tinted based on current player
-            emissive: 0x444444,
-            emissiveIntensity: 0.3,
-            roughness: 0.4,
-            metalness: 0.3
-        });
-        this.selectionIndicator = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        this.selectionIndicator = createHourglass({ color: 0xffffff });
         this.selectionIndicator.visible = false; // Hidden by default
         this.scene.add(this.selectionIndicator);
     }
@@ -234,16 +208,18 @@ export class CheckersManager {
                 this.selectionIndicator.position.z = piece.mesh.position.z;
                 
                 // Update indicator color based on current player's turn
-                const material = this.selectionIndicator.material as THREE.MeshStandardMaterial;
-                if (this.currentPlayer === 'black') {
-                    // Dark gray for black player's turn
-                    material.color = new THREE.Color(0x505050);
-                    material.emissive = new THREE.Color(0x202020);
-                } else {
-                    // Light tan/beige for white player's turn
-                    material.color = new THREE.Color(0xe8d4b8);
-                    material.emissive = new THREE.Color(0xb8a080);
-                }
+                this.selectionIndicator.children.forEach((child) => {
+                    const material = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
+                    if (this.currentPlayer === 'black') {
+                        // Dark gray for black player's turn
+                        material.color = new THREE.Color(0x505050);
+                        material.emissive = new THREE.Color(0x202020);
+                    } else {
+                        // Light tan/beige for white player's turn
+                        material.color = new THREE.Color(0xe8d4b8);
+                        material.emissive = new THREE.Color(0xb8a080);
+                    }
+                });
                 
                 this.selectionIndicator.visible = true;
             }
