@@ -284,6 +284,17 @@ export class CheckersManager {
                 piece.mesh.material.dispose();
             }
             this.pieces.splice(index, 1);
+            
+            // Adjust selectedPieceIndex if the removed piece was before the selected piece
+            if (this.selectedPieceIndex > index) {
+                this.selectedPieceIndex--;
+            } else if (this.selectedPieceIndex === index) {
+                // The selected piece itself was removed (shouldn't happen in normal gameplay)
+                this.selectedPieceIndex = -1;
+            }
+            
+            // Adjust mustCaptureFrom indices if any were after the removed piece
+            this.mustCaptureFrom = this.mustCaptureFrom.map(i => i > index ? i - 1 : i);
         }
     }
 
