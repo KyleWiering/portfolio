@@ -120,17 +120,18 @@ export class CheckersManager {
         // Adjust material properties based on color
         const material = puck.material as THREE.MeshStandardMaterial;
         
-        // Tint the brick texture based on piece color
+        // Tint the circular pattern texture based on piece color
+        // Keep high gloss and metalness for mirror-like surface
         if (color === 'black') {
-            material.color = new THREE.Color(0x4a4a4a); // Medium gray tint for black pieces - better contrast
-            material.roughness = 0.7;
-            material.metalness = 0.2;
-            material.emissive = new THREE.Color(0x1a1a1a); // Subtle emissive for visibility
-            material.emissiveIntensity = 0.2;
+            material.color = new THREE.Color(0x2a2a2a); // Darker gray for black pieces - high contrast
+            material.roughness = 0.05; // Super glossy
+            material.metalness = 0.9; // Very metallic for mirror-like reflections
+            material.emissive = new THREE.Color(0x000000); // No emissive for pure reflections
+            material.emissiveIntensity = 0.0;
         } else {
-            material.color = new THREE.Color(0xd4a574); // Light tan tint for white pieces
-            material.roughness = 0.6;
-            material.metalness = 0.0;
+            material.color = new THREE.Color(0xe8e8e8); // Very light gray/white for white pieces
+            material.roughness = 0.05; // Super glossy
+            material.metalness = 0.9; // Very metallic for mirror-like reflections
         }
         
         // Position the piece - gridPosition already contains final coordinates

@@ -161,3 +161,63 @@ export function createBrickTexture(): THREE.Texture {
     texture.wrapT = THREE.RepeatWrapping;
     return texture;
 }
+
+/**
+ * Create a circular pattern texture for hockey pucks
+ */
+export function createCircularPuckTexture(): THREE.Texture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext('2d')!;
+    
+    const centerX = 256;
+    const centerY = 256;
+    const maxRadius = 256;
+    
+    // Create concentric circles pattern
+    for (let radius = maxRadius; radius > 0; radius -= 8) {
+        const intensity = 1 - (radius / maxRadius) * 0.3; // Lighter towards center
+        const grayValue = Math.floor(128 * intensity);
+        context.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+        
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        context.fill();
+    }
+    
+    // Add fine circular grooves for realism
+    for (let radius = 20; radius < maxRadius; radius += 16) {
+        context.strokeStyle = `rgba(0, 0, 0, 0.15)`;
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        context.stroke();
+    }
+    
+    // Add subtle radial lines from center
+    const numLines = 32;
+    for (let i = 0; i < numLines; i++) {
+        const angle = (i / numLines) * Math.PI * 2;
+        const startRadius = 10;
+        const endRadius = maxRadius;
+        
+        context.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(
+            centerX + Math.cos(angle) * startRadius,
+            centerY + Math.sin(angle) * startRadius
+        );
+        context.lineTo(
+            centerX + Math.cos(angle) * endRadius,
+            centerY + Math.sin(angle) * endRadius
+        );
+        context.stroke();
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
+}

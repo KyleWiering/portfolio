@@ -4,7 +4,7 @@
  */
 import * as THREE from 'three';
 import { ObjectConfig } from '../../core/types';
-import { createBrickTexture } from '../../core/textures/textureGenerator';
+import { createCircularPuckTexture } from '../../core/textures/textureGenerator';
 import { PUCK_RADIUS, PUCK_HEIGHT, PUCK_RADIAL_SEGMENTS } from '../../core/constants/boardConfig';
 
 export function createHockeyPuck(config: ObjectConfig): THREE.Mesh {
@@ -15,12 +15,21 @@ export function createHockeyPuck(config: ObjectConfig): THREE.Mesh {
     let material: THREE.Material;
     
     if (config.useTexture) {
-        // Use brick texture for checker pieces
-        const texture = createBrickTexture();
-        material = new THREE.MeshStandardMaterial({ map: texture });
+        // Use circular pattern texture for hockey pucks
+        const texture = createCircularPuckTexture();
+        material = new THREE.MeshStandardMaterial({ 
+            map: texture,
+            roughness: 0.1,  // Very smooth, glossy surface
+            metalness: 0.8,   // High metalness for mirror-like reflections
+            envMapIntensity: 1.5 // Enhanced environment map reflections
+        });
     } else {
         const color = config.color || 0xf59e0b; // Amber as default
-        material = new THREE.MeshStandardMaterial({ color });
+        material = new THREE.MeshStandardMaterial({ 
+            color,
+            roughness: 0.1,
+            metalness: 0.8
+        });
     }
     
     return new THREE.Mesh(geometry, material);

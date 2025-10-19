@@ -582,54 +582,60 @@ export class CheckersRenderer {
     }
 
     /**
-     * Add waterfall effects at the edges
+     * Add fence/wall at the edges connecting the rocks
      */
     private addWaterfalls(poolGroup: THREE.Group, poolEnd: number): void {
-        // Create waterfall material (more transparent, flowing appearance)
-        const waterfallMaterial = new THREE.MeshStandardMaterial({
-            color: 0x87ceeb, // Sky blue
-            transparent: true,
-            opacity: WATERFALL_OPACITY,
-            roughness: 0.3,
+        // Create stone wall material to match the cragged edges
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: CRAG_COLOR,
+            roughness: 0.9,
             metalness: 0.1
         });
         
         const boardSize = BOARD_SIZE;
         const totalBoardWidth = boardSize + BORDER_WIDTH * 2;
+        const wallHeight = 1.5; // Solid wall height
+        const wallThickness = 0.3; // Wall thickness
         
-        // Top waterfall
-        const topWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(totalBoardWidth, WATERFALL_HEIGHT),
-            waterfallMaterial
+        // Top wall
+        const topWall = new THREE.Mesh(
+            new THREE.BoxGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, wallHeight, wallThickness),
+            wallMaterial
         );
-        topWaterfall.position.set(0, GRID_Y_POSITION - WATER_POOL_DEPTH + WATERFALL_HEIGHT / 2, -poolEnd);
-        poolGroup.add(topWaterfall);
+        topWall.position.set(0, GRID_Y_POSITION + wallHeight / 2, -poolEnd);
+        topWall.castShadow = true;
+        topWall.receiveShadow = true;
+        poolGroup.add(topWall);
         
-        // Bottom waterfall
-        const bottomWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(totalBoardWidth, WATERFALL_HEIGHT),
-            waterfallMaterial
+        // Bottom wall
+        const bottomWall = new THREE.Mesh(
+            new THREE.BoxGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, wallHeight, wallThickness),
+            wallMaterial
         );
-        bottomWaterfall.position.set(0, GRID_Y_POSITION - WATER_POOL_DEPTH + WATERFALL_HEIGHT / 2, poolEnd);
-        poolGroup.add(bottomWaterfall);
+        bottomWall.position.set(0, GRID_Y_POSITION + wallHeight / 2, poolEnd);
+        bottomWall.castShadow = true;
+        bottomWall.receiveShadow = true;
+        poolGroup.add(bottomWall);
         
-        // Left waterfall
-        const leftWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(WATERFALL_HEIGHT, totalBoardWidth),
-            waterfallMaterial
+        // Left wall
+        const leftWall = new THREE.Mesh(
+            new THREE.BoxGeometry(wallThickness, wallHeight, totalBoardWidth + WATER_POOL_WIDTH * 2),
+            wallMaterial
         );
-        leftWaterfall.rotation.y = Math.PI / 2;
-        leftWaterfall.position.set(-poolEnd, GRID_Y_POSITION - WATER_POOL_DEPTH + WATERFALL_HEIGHT / 2, 0);
-        poolGroup.add(leftWaterfall);
+        leftWall.position.set(-poolEnd, GRID_Y_POSITION + wallHeight / 2, 0);
+        leftWall.castShadow = true;
+        leftWall.receiveShadow = true;
+        poolGroup.add(leftWall);
         
-        // Right waterfall
-        const rightWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(WATERFALL_HEIGHT, totalBoardWidth),
-            waterfallMaterial
+        // Right wall
+        const rightWall = new THREE.Mesh(
+            new THREE.BoxGeometry(wallThickness, wallHeight, totalBoardWidth + WATER_POOL_WIDTH * 2),
+            wallMaterial
         );
-        rightWaterfall.rotation.y = Math.PI / 2;
-        rightWaterfall.position.set(poolEnd, GRID_Y_POSITION - WATER_POOL_DEPTH + WATERFALL_HEIGHT / 2, 0);
-        poolGroup.add(rightWaterfall);
+        rightWall.position.set(poolEnd, GRID_Y_POSITION + wallHeight / 2, 0);
+        rightWall.castShadow = true;
+        rightWall.receiveShadow = true;
+        poolGroup.add(rightWall);
     }
 
     /**
