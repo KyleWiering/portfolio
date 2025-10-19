@@ -1,9 +1,17 @@
 // Checkers Manager - Handles checkers piece creation and management
 import * as THREE from 'three';
-import { createPyramid, createHourglass } from '../objects/geometries';
+import { createHockeyPuck, createHourglass } from '../objects/geometries';
 import { CheckersPieceBehavior } from '../behaviors/checkersBehavior';
 import { GridPosition, CheckersColor, MoveResult } from '../core/types';
-import { BOARD_MIN, BOARD_MAX, PIECES_PER_SIDE_ROWS, WHITE_PIECE_START_ROW } from '../core/constants/boardConfig';
+import { 
+    BOARD_MIN, 
+    BOARD_MAX, 
+    PIECES_PER_SIDE_ROWS, 
+    WHITE_PIECE_START_ROW,
+    BOARD_Y_POSITION,
+    PUCK_Y_OFFSET,
+    SELECTION_INDICATOR_HEIGHT_OFFSET
+} from '../core/constants/boardConfig';
 
 interface CheckersPiece {
     mesh: THREE.Mesh;
@@ -102,47 +110,35 @@ export class CheckersManager {
      * Create a single checkers piece at the specified position
      */
     private createPiece(gridPosition: GridPosition, color: CheckersColor): void {
-        // Use brick texture for all pieces
-        const pyramid = createPyramid({ useTexture: true });
+        // Create hockey puck with wood texture - beachwood for white, ebony for black
+        const woodType = color === 'white' ? 'beachwood' : 'ebony';
+        const puck = createHockeyPuck({ useTexture: true, woodType });
         
         // Enable shadow casting and receiving
-        pyramid.castShadow = true;
-        pyramid.receiveShadow = true;
+        puck.castShadow = true;
+        puck.receiveShadow = true;
         
-        // Adjust material properties based on color
-        const material = pyramid.material as THREE.MeshStandardMaterial;
-        
-        // Tint the brick texture based on piece color
-        if (color === 'black') {
-            material.color = new THREE.Color(0x4a4a4a); // Medium gray tint for black pieces - better contrast
-            material.roughness = 0.7;
-            material.metalness = 0.2;
-            material.emissive = new THREE.Color(0x1a1a1a); // Subtle emissive for visibility
-            material.emissiveIntensity = 0.2;
-        } else {
-            material.color = new THREE.Color(0xd4a574); // Light tan tint for white pieces
-            material.roughness = 0.6;
-            material.metalness = 0.0;
-        }
+        // Material properties are now set by the wood texture
+        // No need to override color as texture provides the appearance
         
         // Position the piece - gridPosition already contains final coordinates
         // No need to multiply by gridSpacing since positions are already in world units
-        pyramid.position.x = gridPosition.x;
-        pyramid.position.z = gridPosition.z;
-        pyramid.position.y = -1.9; // On the board (same level as checkerboard plane)
+        puck.position.x = gridPosition.x;
+        puck.position.z = gridPosition.z;
+        puck.position.y = BOARD_Y_POSITION + PUCK_Y_OFFSET; // On the board, raised by half the puck height
         
         // Add to scene
-        this.scene.add(pyramid);
+        this.scene.add(puck);
         
         // Update matrix for raycasting
-        pyramid.updateMatrixWorld(true);
+        puck.updateMatrixWorld(true);
         
         // Create behavior for this piece
         const behavior = new CheckersPieceBehavior();
         
         // Store piece info
         this.pieces.push({
-            mesh: pyramid,
+            mesh: puck,
             gridPosition: { x: gridPosition.x, z: gridPosition.z },
             behavior,
             color,
@@ -204,7 +200,7 @@ export class CheckersManager {
             // Show selection indicator above the piece with color representing current player
             if (this.selectionIndicator) {
                 this.selectionIndicator.position.x = piece.mesh.position.x;
-                this.selectionIndicator.position.y = piece.mesh.position.y + 1.0;
+                this.selectionIndicator.position.y = piece.mesh.position.y + SELECTION_INDICATOR_HEIGHT_OFFSET;
                 this.selectionIndicator.position.z = piece.mesh.position.z;
                 
                 // Update indicator color based on current player's turn

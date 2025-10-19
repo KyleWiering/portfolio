@@ -1,7 +1,55 @@
 // Checkers Renderer - Handles WebGL scene setup with overhead camera view
 import * as THREE from 'three';
 import { createCheckerboardTexture } from '../core/textures/textureGenerator';
-import { BOARD_SIZE, DEFAULT_SHADOW_MAP_SIZE, ShadowMapConfig } from '../core/constants/boardConfig';
+import { 
+    BOARD_SIZE, 
+    BOARD_Y_POSITION,
+    GRID_Y_POSITION,
+    GRID_SIZE,
+    GRID_SPACING,
+    GRID_COLOR,
+    GRID_OPACITY,
+    GRID_DASH_SIZE,
+    GRID_GAP_SIZE,
+    CAMERA_FOV,
+    CAMERA_NEAR_PLANE,
+    CAMERA_FAR_PLANE,
+    CAMERA_INITIAL_Y,
+    CAMERA_INITIAL_Z,
+    CAMERA_TARGET_Y,
+    MIN_ZOOM_DISTANCE,
+    MAX_ZOOM_DISTANCE,
+    ZOOM_SPEED,
+    PAN_SPEED,
+    BORDER_WIDTH,
+    BORDER_HEIGHT,
+    BORDER_COLOR,
+    WATER_POOL_WIDTH,
+    WATER_POOL_DEPTH,
+    WATER_COLOR,
+    WATER_OPACITY,
+    WATERFALL_HEIGHT,
+    WATERFALL_OPACITY,
+    GRASS_FIELD_SIZE,
+    GRASS_TEXTURE_REPEAT,
+    GRASS_COLOR,
+    GRASS_Y_POSITION,
+    CRAG_COUNT,
+    CRAG_COLOR,
+    AMBIENT_LIGHT_COLOR,
+    AMBIENT_LIGHT_INTENSITY,
+    DIRECTIONAL_LIGHT_COLOR,
+    DIRECTIONAL_LIGHT_INTENSITY,
+    DIRECTIONAL_LIGHT_X,
+    DIRECTIONAL_LIGHT_Y,
+    DIRECTIONAL_LIGHT_Z,
+    SHADOW_CAMERA_NEAR,
+    SHADOW_CAMERA_FAR,
+    SHADOW_CAMERA_SIZE,
+    SHADOW_BIAS,
+    DEFAULT_SHADOW_MAP_SIZE, 
+    ShadowMapConfig 
+} from '../core/constants/boardConfig';
 
 /**
  * Create an isometric grid with dashed lines
@@ -9,17 +57,13 @@ import { BOARD_SIZE, DEFAULT_SHADOW_MAP_SIZE, ShadowMapConfig } from '../core/co
 function createIsometricGrid(width: number, depth: number, spacing: number): THREE.Group {
     const gridGroup = new THREE.Group();
     
-    // Grid configuration
-    const gridColor = 0x808080; // Grey color
-    const opacity = 0.3; // Transparent
-    
     // Create material for dashed lines
     const lineMaterial = new THREE.LineDashedMaterial({
-        color: gridColor,
+        color: GRID_COLOR,
         transparent: true,
-        opacity: opacity,
-        dashSize: 0.1,
-        gapSize: 0.1,
+        opacity: GRID_OPACITY,
+        dashSize: GRID_DASH_SIZE,
+        gapSize: GRID_GAP_SIZE,
         linewidth: 1
     });
     
@@ -51,7 +95,7 @@ function createIsometricGrid(width: number, depth: number, spacing: number): THR
     }
     
     // Position the grid slightly below the models
-    gridGroup.position.y = -2;
+    gridGroup.position.y = GRID_Y_POSITION;
     
     return gridGroup;
 }
@@ -75,7 +119,7 @@ function createCheckerboardPlane(): THREE.Mesh {
     
     // Rotate to be horizontal and position slightly above the grid
     plane.rotation.x = -Math.PI / 2;
-    plane.position.y = -1.9; // Just above the grid at y=-2
+    plane.position.y = BOARD_Y_POSITION;
     
     return plane;
 }
@@ -88,16 +132,16 @@ export class CheckersRenderer {
     private camera: THREE.PerspectiveCamera;
     private renderer: THREE.WebGLRenderer;
     private container: HTMLElement;
-    private minZoom: number = 6;  // Minimum zoom distance
-    private maxZoom: number = 12; // Maximum zoom distance
-    private zoomSpeed: number = 0.5; // Zoom speed for wheel
+    private minZoom: number = MIN_ZOOM_DISTANCE;
+    private maxZoom: number = MAX_ZOOM_DISTANCE;
+    private zoomSpeed: number = ZOOM_SPEED;
     private lastTouchDistance: number = 0; // For pinch-to-zoom
     private shadowMapSize: ShadowMapConfig; // Configurable shadow map size
     private isPanning: boolean = false; // Is currently panning
     private lastPanX: number = 0; // Last pan X position
     private lastPanY: number = 0; // Last pan Y position
-    private cameraTarget: THREE.Vector3 = new THREE.Vector3(0, -1, 0); // Camera look-at target
-    private panSpeed: number = 0.01; // Pan speed multiplier
+    private cameraTarget: THREE.Vector3 = new THREE.Vector3(0, CAMERA_TARGET_Y, 0);
+    private panSpeed: number = PAN_SPEED;
 
     constructor(containerId: string, shadowMapSize: ShadowMapConfig = DEFAULT_SHADOW_MAP_SIZE) {
         this.shadowMapSize = shadowMapSize;
@@ -117,15 +161,15 @@ export class CheckersRenderer {
 
         // Camera setup - positioned above looking down
         this.camera = new THREE.PerspectiveCamera(
-            75,
+            CAMERA_FOV,
             window.innerWidth / window.innerHeight,
-            0.1,
-            2000  // Increased far plane to see horizon
+            CAMERA_NEAR_PLANE,
+            CAMERA_FAR_PLANE
         );
         
         // Position camera above the grid, looking down - zoomed in closer
-        this.camera.position.set(0, 8, 4);
-        this.camera.lookAt(0, -1, 0);
+        this.camera.position.set(0, CAMERA_INITIAL_Y, CAMERA_INITIAL_Z);
+        this.camera.lookAt(0, CAMERA_TARGET_Y, 0);
 
         // Renderer setup with shadow support
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -139,7 +183,7 @@ export class CheckersRenderer {
         this.setupLighting();
 
         // Add isometric grid (hidden)
-        const gridHelper = createIsometricGrid(20, 20, 1);
+        const gridHelper = createIsometricGrid(GRID_SIZE, GRID_SIZE, GRID_SPACING);
         gridHelper.visible = false; // Hide the grid
         this.scene.add(gridHelper);
         
@@ -200,55 +244,53 @@ export class CheckersRenderer {
      */
     private createWoodBorder(): THREE.Group {
         const borderGroup = new THREE.Group();
-        const borderWidth = 0.5;
-        const borderHeight = 0.3;
         const boardSize = BOARD_SIZE;
         
         // Create wood texture
         const woodTexture = this.createWoodTexture();
         const woodMaterial = new THREE.MeshStandardMaterial({ 
             map: woodTexture,
-            color: 0x8B4513, // Brown wood color
+            color: BORDER_COLOR,
             roughness: 0.8,
             metalness: 0.1
         });
         
         // Create four border pieces (top, bottom, left, right)
-        const borderThickness = boardSize + borderWidth * 2;
+        const borderThickness = boardSize + BORDER_WIDTH * 2;
         
         // Top border
         const topBorder = new THREE.Mesh(
-            new THREE.BoxGeometry(borderThickness, borderHeight, borderWidth),
+            new THREE.BoxGeometry(borderThickness, BORDER_HEIGHT, BORDER_WIDTH),
             woodMaterial
         );
-        topBorder.position.set(0, -1.9 + borderHeight/2, -boardSize/2 - borderWidth/2);
+        topBorder.position.set(0, BOARD_Y_POSITION + BORDER_HEIGHT/2, -boardSize/2 - BORDER_WIDTH/2);
         topBorder.receiveShadow = true;
         borderGroup.add(topBorder);
         
         // Bottom border
         const bottomBorder = new THREE.Mesh(
-            new THREE.BoxGeometry(borderThickness, borderHeight, borderWidth),
+            new THREE.BoxGeometry(borderThickness, BORDER_HEIGHT, BORDER_WIDTH),
             woodMaterial
         );
-        bottomBorder.position.set(0, -1.9 + borderHeight/2, boardSize/2 + borderWidth/2);
+        bottomBorder.position.set(0, BOARD_Y_POSITION + BORDER_HEIGHT/2, boardSize/2 + BORDER_WIDTH/2);
         bottomBorder.receiveShadow = true;
         borderGroup.add(bottomBorder);
         
         // Left border
         const leftBorder = new THREE.Mesh(
-            new THREE.BoxGeometry(borderWidth, borderHeight, boardSize),
+            new THREE.BoxGeometry(BORDER_WIDTH, BORDER_HEIGHT, boardSize),
             woodMaterial
         );
-        leftBorder.position.set(-boardSize/2 - borderWidth/2, -1.9 + borderHeight/2, 0);
+        leftBorder.position.set(-boardSize/2 - BORDER_WIDTH/2, BOARD_Y_POSITION + BORDER_HEIGHT/2, 0);
         leftBorder.receiveShadow = true;
         borderGroup.add(leftBorder);
         
         // Right border
         const rightBorder = new THREE.Mesh(
-            new THREE.BoxGeometry(borderWidth, borderHeight, boardSize),
+            new THREE.BoxGeometry(BORDER_WIDTH, BORDER_HEIGHT, boardSize),
             woodMaterial
         );
-        rightBorder.position.set(boardSize/2 + borderWidth/2, -1.9 + borderHeight/2, 0);
+        rightBorder.position.set(boardSize/2 + BORDER_WIDTH/2, BOARD_Y_POSITION + BORDER_HEIGHT/2, 0);
         rightBorder.receiveShadow = true;
         borderGroup.add(rightBorder);
         
@@ -353,24 +395,23 @@ export class CheckersRenderer {
      * Create grassy field up to the horizon
      */
     private createGrassyField(): THREE.Mesh {
-        const fieldSize = 500; // Much larger field extending to horizon
         const grassTexture = this.createGrassTexture();
         grassTexture.wrapS = THREE.RepeatWrapping;
         grassTexture.wrapT = THREE.RepeatWrapping;
-        grassTexture.repeat.set(100, 100); // More repetition for better appearance
+        grassTexture.repeat.set(GRASS_TEXTURE_REPEAT, GRASS_TEXTURE_REPEAT);
         
         const grassMaterial = new THREE.MeshStandardMaterial({
             map: grassTexture,
-            color: 0x228B22, // Forest green
+            color: GRASS_COLOR,
             roughness: 0.9,
             metalness: 0.0
         });
         
-        const geometry = new THREE.PlaneGeometry(fieldSize, fieldSize);
+        const geometry = new THREE.PlaneGeometry(GRASS_FIELD_SIZE, GRASS_FIELD_SIZE);
         const field = new THREE.Mesh(geometry, grassMaterial);
         field.receiveShadow = true;
         field.rotation.x = -Math.PI / 2;
-        field.position.y = -2.1; // Below the board and grid
+        field.position.y = GRASS_Y_POSITION;
         
         return field;
     }
@@ -436,71 +477,68 @@ export class CheckersRenderer {
     private createWaterPool(): THREE.Group {
         const poolGroup = new THREE.Group();
         const boardSize = BOARD_SIZE;
-        const borderWidth = 0.5;
-        const poolWidth = 3; // Width of the water pool
-        const poolDepth = 1; // Depth below the board
         
         // Create water material with transparency and reflection
         const waterTexture = this.createWaterTexture();
         const waterMaterial = new THREE.MeshStandardMaterial({
             map: waterTexture,
-            color: 0x1e90ff, // Dodger blue
+            color: WATER_COLOR,
             transparent: true,
-            opacity: 0.7,
+            opacity: WATER_OPACITY,
             roughness: 0.1,
             metalness: 0.3,
             emissive: new THREE.Color(0x0066cc),
             emissiveIntensity: 0.2
         });
         
-        const totalBoardWidth = boardSize + borderWidth * 2;
+        const totalBoardWidth = boardSize + BORDER_WIDTH * 2;
         const outerEdge = totalBoardWidth / 2;
         const poolStart = outerEdge;
-        const poolEnd = outerEdge + poolWidth;
+        const poolEnd = outerEdge + WATER_POOL_WIDTH;
         
         // Create four water strips around the board (top, bottom, left, right)
         // Top water strip
         const topWater = new THREE.Mesh(
-            new THREE.PlaneGeometry(totalBoardWidth + poolWidth * 2, poolWidth),
+            new THREE.PlaneGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, WATER_POOL_WIDTH),
             waterMaterial
         );
         topWater.rotation.x = -Math.PI / 2;
-        topWater.position.set(0, -2.0 - poolDepth, -poolStart - poolWidth / 2);
+        topWater.position.set(0, GRID_Y_POSITION - WATER_POOL_DEPTH, -poolStart - WATER_POOL_WIDTH / 2);
         topWater.receiveShadow = true;
         poolGroup.add(topWater);
         
         // Bottom water strip
         const bottomWater = new THREE.Mesh(
-            new THREE.PlaneGeometry(totalBoardWidth + poolWidth * 2, poolWidth),
+            new THREE.PlaneGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, WATER_POOL_WIDTH),
             waterMaterial
         );
         bottomWater.rotation.x = -Math.PI / 2;
-        bottomWater.position.set(0, -2.0 - poolDepth, poolStart + poolWidth / 2);
+        bottomWater.position.set(0, GRID_Y_POSITION - WATER_POOL_DEPTH, poolStart + WATER_POOL_WIDTH / 2);
         bottomWater.receiveShadow = true;
         poolGroup.add(bottomWater);
         
         // Left water strip
         const leftWater = new THREE.Mesh(
-            new THREE.PlaneGeometry(poolWidth, totalBoardWidth),
+            new THREE.PlaneGeometry(WATER_POOL_WIDTH, totalBoardWidth),
             waterMaterial
         );
         leftWater.rotation.x = -Math.PI / 2;
-        leftWater.position.set(-poolStart - poolWidth / 2, -2.0 - poolDepth, 0);
+        leftWater.position.set(-poolStart - WATER_POOL_WIDTH / 2, GRID_Y_POSITION - WATER_POOL_DEPTH, 0);
         leftWater.receiveShadow = true;
         poolGroup.add(leftWater);
         
         // Right water strip
         const rightWater = new THREE.Mesh(
-            new THREE.PlaneGeometry(poolWidth, totalBoardWidth),
+            new THREE.PlaneGeometry(WATER_POOL_WIDTH, totalBoardWidth),
             waterMaterial
         );
         rightWater.rotation.x = -Math.PI / 2;
-        rightWater.position.set(poolStart + poolWidth / 2, -2.0 - poolDepth, 0);
+        rightWater.position.set(poolStart + WATER_POOL_WIDTH / 2, GRID_Y_POSITION - WATER_POOL_DEPTH, 0);
         rightWater.receiveShadow = true;
         poolGroup.add(rightWater);
         
         // Add waterfall effects at the edges
-        this.addWaterfalls(poolGroup, poolEnd, poolDepth);
+        this.addWaterfalls(poolGroup, poolEnd);
         
         return poolGroup;
     }
@@ -544,57 +582,60 @@ export class CheckersRenderer {
     }
 
     /**
-     * Add waterfall effects at the edges
+     * Add fence/wall at the edges connecting the rocks
      */
-    private addWaterfalls(poolGroup: THREE.Group, poolEnd: number, poolDepth: number): void {
-        // Create waterfall material (more transparent, flowing appearance)
-        const waterfallMaterial = new THREE.MeshStandardMaterial({
-            color: 0x87ceeb, // Sky blue
-            transparent: true,
-            opacity: 0.5,
-            roughness: 0.3,
+    private addWaterfalls(poolGroup: THREE.Group, poolEnd: number): void {
+        // Create stone wall material to match the cragged edges
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: CRAG_COLOR,
+            roughness: 0.9,
             metalness: 0.1
         });
         
-        const waterfallHeight = 2;
-        const waterfallThickness = 0.1;
         const boardSize = BOARD_SIZE;
-        const borderWidth = 0.5;
-        const totalBoardWidth = boardSize + borderWidth * 2;
+        const totalBoardWidth = boardSize + BORDER_WIDTH * 2;
+        const wallHeight = 1.5; // Solid wall height
+        const wallThickness = 0.3; // Wall thickness
         
-        // Top waterfall
-        const topWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(totalBoardWidth, waterfallHeight),
-            waterfallMaterial
+        // Top wall
+        const topWall = new THREE.Mesh(
+            new THREE.BoxGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, wallHeight, wallThickness),
+            wallMaterial
         );
-        topWaterfall.position.set(0, -2.0 - poolDepth + waterfallHeight / 2, -poolEnd);
-        poolGroup.add(topWaterfall);
+        topWall.position.set(0, GRID_Y_POSITION + wallHeight / 2, -poolEnd);
+        topWall.castShadow = true;
+        topWall.receiveShadow = true;
+        poolGroup.add(topWall);
         
-        // Bottom waterfall
-        const bottomWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(totalBoardWidth, waterfallHeight),
-            waterfallMaterial
+        // Bottom wall
+        const bottomWall = new THREE.Mesh(
+            new THREE.BoxGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, wallHeight, wallThickness),
+            wallMaterial
         );
-        bottomWaterfall.position.set(0, -2.0 - poolDepth + waterfallHeight / 2, poolEnd);
-        poolGroup.add(bottomWaterfall);
+        bottomWall.position.set(0, GRID_Y_POSITION + wallHeight / 2, poolEnd);
+        bottomWall.castShadow = true;
+        bottomWall.receiveShadow = true;
+        poolGroup.add(bottomWall);
         
-        // Left waterfall
-        const leftWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(waterfallHeight, totalBoardWidth),
-            waterfallMaterial
+        // Left wall
+        const leftWall = new THREE.Mesh(
+            new THREE.BoxGeometry(wallThickness, wallHeight, totalBoardWidth + WATER_POOL_WIDTH * 2),
+            wallMaterial
         );
-        leftWaterfall.rotation.y = Math.PI / 2;
-        leftWaterfall.position.set(-poolEnd, -2.0 - poolDepth + waterfallHeight / 2, 0);
-        poolGroup.add(leftWaterfall);
+        leftWall.position.set(-poolEnd, GRID_Y_POSITION + wallHeight / 2, 0);
+        leftWall.castShadow = true;
+        leftWall.receiveShadow = true;
+        poolGroup.add(leftWall);
         
-        // Right waterfall
-        const rightWaterfall = new THREE.Mesh(
-            new THREE.PlaneGeometry(waterfallHeight, totalBoardWidth),
-            waterfallMaterial
+        // Right wall
+        const rightWall = new THREE.Mesh(
+            new THREE.BoxGeometry(wallThickness, wallHeight, totalBoardWidth + WATER_POOL_WIDTH * 2),
+            wallMaterial
         );
-        rightWaterfall.rotation.y = Math.PI / 2;
-        rightWaterfall.position.set(poolEnd, -2.0 - poolDepth + waterfallHeight / 2, 0);
-        poolGroup.add(rightWaterfall);
+        rightWall.position.set(poolEnd, GRID_Y_POSITION + wallHeight / 2, 0);
+        rightWall.castShadow = true;
+        rightWall.receiveShadow = true;
+        poolGroup.add(rightWall);
     }
 
     /**
@@ -603,39 +644,37 @@ export class CheckersRenderer {
     private createCraggedEdges(): THREE.Group {
         const cragGroup = new THREE.Group();
         const boardSize = BOARD_SIZE;
-        const borderWidth = 0.5;
-        const poolWidth = 3;
-        const edgePosition = (boardSize + borderWidth * 2) / 2 + poolWidth;
+        const edgePosition = (boardSize + BORDER_WIDTH * 2) / 2 + WATER_POOL_WIDTH;
         
         // Create stone/rock material for cragged edges
         const stoneMaterial = new THREE.MeshStandardMaterial({
-            color: 0x696969, // Dim gray
+            color: CRAG_COLOR,
             roughness: 0.9,
             metalness: 0.1
         });
         
         // Create random cragged rocks around the perimeter
-        const numCrags = 40;
+        const numCrags = CRAG_COUNT;
         for (let i = 0; i < numCrags; i++) {
             const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
             let x = 0, z = 0;
             
             switch(side) {
                 case 0: // Top
-                    x = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    x = (Math.random() - 0.5) * (boardSize + WATER_POOL_WIDTH * 2);
                     z = -edgePosition + (Math.random() - 0.5) * 2;
                     break;
                 case 1: // Right
                     x = edgePosition + (Math.random() - 0.5) * 2;
-                    z = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    z = (Math.random() - 0.5) * (boardSize + WATER_POOL_WIDTH * 2);
                     break;
                 case 2: // Bottom
-                    x = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    x = (Math.random() - 0.5) * (boardSize + WATER_POOL_WIDTH * 2);
                     z = edgePosition + (Math.random() - 0.5) * 2;
                     break;
                 case 3: // Left
                     x = -edgePosition + (Math.random() - 0.5) * 2;
-                    z = (Math.random() - 0.5) * (boardSize + poolWidth * 2);
+                    z = (Math.random() - 0.5) * (boardSize + WATER_POOL_WIDTH * 2);
                     break;
             }
             
@@ -649,7 +688,7 @@ export class CheckersRenderer {
                 stoneMaterial
             );
             
-            crag.position.set(x, -2.0 + height / 2, z);
+            crag.position.set(x, GRID_Y_POSITION + height / 2, z);
             crag.rotation.y = Math.random() * Math.PI * 2;
             crag.castShadow = true;
             crag.receiveShadow = true;
@@ -665,24 +704,24 @@ export class CheckersRenderer {
      */
     private setupLighting(): void {
         // Ambient light for overall scene illumination
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        const ambientLight = new THREE.AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY);
         this.scene.add(ambientLight);
 
         // Directional light from above-right to create shadows
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(8, 12, 8);
+        const directionalLight = new THREE.DirectionalLight(DIRECTIONAL_LIGHT_COLOR, DIRECTIONAL_LIGHT_INTENSITY);
+        directionalLight.position.set(DIRECTIONAL_LIGHT_X, DIRECTIONAL_LIGHT_Y, DIRECTIONAL_LIGHT_Z);
         directionalLight.castShadow = true;
         
         // Configure shadow properties
         directionalLight.shadow.mapSize.width = this.shadowMapSize.width;
         directionalLight.shadow.mapSize.height = this.shadowMapSize.height;
-        directionalLight.shadow.camera.near = 0.5;
-        directionalLight.shadow.camera.far = 30;
-        directionalLight.shadow.camera.left = -12;
-        directionalLight.shadow.camera.right = 12;
-        directionalLight.shadow.camera.top = 12;
-        directionalLight.shadow.camera.bottom = -12;
-        directionalLight.shadow.bias = -0.0001;
+        directionalLight.shadow.camera.near = SHADOW_CAMERA_NEAR;
+        directionalLight.shadow.camera.far = SHADOW_CAMERA_FAR;
+        directionalLight.shadow.camera.left = -SHADOW_CAMERA_SIZE;
+        directionalLight.shadow.camera.right = SHADOW_CAMERA_SIZE;
+        directionalLight.shadow.camera.top = SHADOW_CAMERA_SIZE;
+        directionalLight.shadow.camera.bottom = -SHADOW_CAMERA_SIZE;
+        directionalLight.shadow.bias = SHADOW_BIAS;
         
         this.scene.add(directionalLight);
     }
