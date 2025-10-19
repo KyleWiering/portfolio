@@ -204,6 +204,21 @@ function initCheckers(): void {
         });
     }
 
+    // Set up play again button
+    const playAgainButton = document.getElementById('play-again-button');
+    const victoryOverlay = document.getElementById('victory-overlay');
+    if (playAgainButton) {
+        playAgainButton.addEventListener('click', () => {
+            // Hide victory overlay
+            if (victoryOverlay) {
+                victoryOverlay.classList.remove('show');
+            }
+            
+            // Reset the game
+            checkersManager.initializeBoard();
+        });
+    }
+
     // Initialize the checkers board
     checkersManager.initializeBoard();
 
@@ -249,6 +264,15 @@ function initCheckers(): void {
                 winnerTextElement.style.display = 'block';
                 const winnerName = currentState.winner.charAt(0).toUpperCase() + currentState.winner.slice(1);
                 winnerTextElement.innerHTML = `<strong>${winnerName}</strong> wins! All opponent pieces have been captured.`;
+            }
+
+            // Show victory overlay
+            const victoryOverlay = document.getElementById('victory-overlay');
+            const victoryMessage = document.getElementById('victory-message');
+            if (victoryOverlay && victoryMessage) {
+                const winnerName = currentState.winner.charAt(0).toUpperCase() + currentState.winner.slice(1);
+                victoryMessage.innerHTML = `<strong>${winnerName}</strong> wins! All opponent pieces have been captured.`;
+                victoryOverlay.classList.add('show');
             }
         }
 

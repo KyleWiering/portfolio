@@ -313,35 +313,58 @@ export class CheckersManager {
         const validMoves: MoveResult[] = [];
         const directions = this.getMovementDirections(piece);
 
-        // Check regular moves (1 or 2 spaces forward)
-        for (const dir of directions) {
-            // Check 1 space move
-            const oneSpace = {
-                x: piece.gridPosition.x + dir.x,
-                z: piece.gridPosition.z + dir.z
-            };
-            
-            if (this.isOnBoard(oneSpace) && !this.getPieceAt(oneSpace)) {
-                // Only allow forward movement, not backward
-                if (this.isForwardMove(piece, dir)) {
+        if (piece.isKing) {
+            // Kings can move any number of spaces diagonally until blocked
+            for (const dir of directions) {
+                for (let distance = 1; distance <= 9; distance++) {
+                    const targetPos = {
+                        x: piece.gridPosition.x + dir.x * distance,
+                        z: piece.gridPosition.z + dir.z * distance
+                    };
+                    
+                    if (!this.isOnBoard(targetPos)) {
+                        break; // Out of bounds, stop checking this direction
+                    }
+                    
+                    const pieceAtTarget = this.getPieceAt(targetPos);
+                    if (pieceAtTarget) {
+                        break; // Path blocked, stop checking this direction
+                    }
+                    
                     validMoves.push({ success: true });
                 }
             }
-
-            // Check 2 space move (only if never moved before)
-            if (!piece.hasMoved) {
-                const twoSpace = {
-                    x: piece.gridPosition.x + dir.x * 2,
-                    z: piece.gridPosition.z + dir.z * 2
-                };
-                const midPoint = {
+        } else {
+            // Regular pieces: Check regular moves (1 or 2 spaces forward)
+            for (const dir of directions) {
+                // Check 1 space move
+                const oneSpace = {
                     x: piece.gridPosition.x + dir.x,
                     z: piece.gridPosition.z + dir.z
                 };
                 
-                if (this.isOnBoard(twoSpace) && !this.getPieceAt(twoSpace) && 
-                    !this.getPieceAt(midPoint) && this.isForwardMove(piece, dir)) {
-                    validMoves.push({ success: true });
+                if (this.isOnBoard(oneSpace) && !this.getPieceAt(oneSpace)) {
+                    // Only allow forward movement, not backward
+                    if (this.isForwardMove(piece, dir)) {
+                        validMoves.push({ success: true });
+                    }
+                }
+
+                // Check 2 space move (only if never moved before)
+                if (!piece.hasMoved) {
+                    const twoSpace = {
+                        x: piece.gridPosition.x + dir.x * 2,
+                        z: piece.gridPosition.z + dir.z * 2
+                    };
+                    const midPoint = {
+                        x: piece.gridPosition.x + dir.x,
+                        z: piece.gridPosition.z + dir.z
+                    };
+                    
+                    if (this.isOnBoard(twoSpace) && !this.getPieceAt(twoSpace) && 
+                        !this.getPieceAt(midPoint) && this.isForwardMove(piece, dir)) {
+                        validMoves.push({ success: true });
+                    }
                 }
             }
         }
@@ -499,6 +522,10 @@ export class CheckersManager {
         else if (!piece.hasMoved && distance > 2.5 && distance < 3) {
             result = this.executeRegularMove(piece, targetPos, 2);
         }
+        // Check for king long-distance move
+        else if (piece.isKing && this.isValidKingMove(piece, targetPos)) {
+            result = this.executeKingMove(piece, targetPos);
+        }
         else {
             return { success: false, message: "Invalid move distance" };
         }
@@ -571,6 +598,57 @@ export class CheckersManager {
             if (this.getPieceAt(midPoint)) {
                 return { success: false, message: "Path is blocked" };
             }
+        }
+
+        // Move the piece
+        piece.gridPosition = { x: targetPos.x, z: targetPos.z };
+        piece.mesh.position.x = targetPos.x;
+        piece.mesh.position.z = targetPos.z;
+
+        return { success: true };
+    }
+
+    /**
+     * Check if a king move is valid (diagonal with clear path)
+     */
+    private isValidKingMove(piece: CheckersPiece, targetPos: GridPosition): boolean {
+        if (!piece.isKing) {
+            return false;
+        }
+
+        const dx = targetPos.x - piece.gridPosition.x;
+        const dz = targetPos.z - piece.gridPosition.z;
+        
+        // Must be diagonal (abs(dx) == abs(dz))
+        if (Math.abs(dx) !== Math.abs(dz)) {
+            return false;
+        }
+
+        // Check path is clear
+        const steps = Math.abs(dx);
+        const stepX = dx / steps;
+        const stepZ = dz / steps;
+        
+        for (let i = 1; i < steps; i++) {
+            const checkPos = {
+                x: piece.gridPosition.x + stepX * i,
+                z: piece.gridPosition.z + stepZ * i
+            };
+            if (this.getPieceAt(checkPos)) {
+                return false; // Path blocked
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Execute a king long-distance move
+     */
+    private executeKingMove(piece: CheckersPiece, targetPos: GridPosition): MoveResult {
+        // Check if there are any jumps available
+        if (this.hasAvailableJumps(piece.color)) {
+            return { success: false, message: "Must capture when available" };
         }
 
         // Move the piece
