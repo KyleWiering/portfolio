@@ -15,20 +15,20 @@ export function createHockeyPuck(config: ObjectConfig): THREE.Mesh {
     let material: THREE.Material;
     
     if (config.useTexture) {
-        // Use circular pattern texture for hockey pucks
-        const texture = createCircularPuckTexture();
+        // Use solid color with glossy finish - no texture to avoid gray tinting
+        // Color will be set in the manager based on piece color
         material = new THREE.MeshStandardMaterial({ 
-            map: texture,
-            roughness: 0.1,  // Very smooth, glossy surface
-            metalness: 0.8,   // High metalness for mirror-like reflections
-            envMapIntensity: 1.5 // Enhanced environment map reflections
+            color: 0xffffff, // Default white, will be overridden
+            roughness: 0.2,  // Glossy surface
+            metalness: 0.1,   // Low metalness so color shows
+            envMapIntensity: 1.0
         });
     } else {
         const color = config.color || 0xf59e0b; // Amber as default
         material = new THREE.MeshStandardMaterial({ 
             color,
-            roughness: 0.1,
-            metalness: 0.8
+            roughness: 0.2,
+            metalness: 0.1
         });
     }
     

@@ -105,9 +105,9 @@ export const CRAG_COLOR = 0x696969; // Dim gray
  * Lighting configuration
  */
 export const AMBIENT_LIGHT_COLOR = 0xffffff; // White light
-export const AMBIENT_LIGHT_INTENSITY = 0.3; // Low ambient intensity
+export const AMBIENT_LIGHT_INTENSITY = 0.5; // Increased ambient intensity for better visibility
 export const DIRECTIONAL_LIGHT_COLOR = 0xffffff; // White light
-export const DIRECTIONAL_LIGHT_INTENSITY = 0.8; // Main light intensity
+export const DIRECTIONAL_LIGHT_INTENSITY = 1.0; // Increased main light intensity
 export const DIRECTIONAL_LIGHT_X = 8; // Light X position
 export const DIRECTIONAL_LIGHT_Y = 12; // Light Y position
 export const DIRECTIONAL_LIGHT_Z = 8; // Light Z position
