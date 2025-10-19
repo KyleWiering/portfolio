@@ -1,9 +1,17 @@
 // Checkers Manager - Handles checkers piece creation and management
 import * as THREE from 'three';
-import { createPyramid, createHourglass } from '../objects/geometries';
+import { createHockeyPuck, createHourglass } from '../objects/geometries';
 import { CheckersPieceBehavior } from '../behaviors/checkersBehavior';
 import { GridPosition, CheckersColor, MoveResult } from '../core/types';
-import { BOARD_MIN, BOARD_MAX, PIECES_PER_SIDE_ROWS, WHITE_PIECE_START_ROW } from '../core/constants/boardConfig';
+import { 
+    BOARD_MIN, 
+    BOARD_MAX, 
+    PIECES_PER_SIDE_ROWS, 
+    WHITE_PIECE_START_ROW,
+    BOARD_Y_POSITION,
+    PUCK_Y_OFFSET,
+    SELECTION_INDICATOR_HEIGHT_OFFSET
+} from '../core/constants/boardConfig';
 
 interface CheckersPiece {
     mesh: THREE.Mesh;
@@ -102,15 +110,15 @@ export class CheckersManager {
      * Create a single checkers piece at the specified position
      */
     private createPiece(gridPosition: GridPosition, color: CheckersColor): void {
-        // Use brick texture for all pieces
-        const pyramid = createPyramid({ useTexture: true });
+        // Use brick texture for all pieces - now using hockey pucks
+        const puck = createHockeyPuck({ useTexture: true });
         
         // Enable shadow casting and receiving
-        pyramid.castShadow = true;
-        pyramid.receiveShadow = true;
+        puck.castShadow = true;
+        puck.receiveShadow = true;
         
         // Adjust material properties based on color
-        const material = pyramid.material as THREE.MeshStandardMaterial;
+        const material = puck.material as THREE.MeshStandardMaterial;
         
         // Tint the brick texture based on piece color
         if (color === 'black') {
@@ -127,22 +135,22 @@ export class CheckersManager {
         
         // Position the piece - gridPosition already contains final coordinates
         // No need to multiply by gridSpacing since positions are already in world units
-        pyramid.position.x = gridPosition.x;
-        pyramid.position.z = gridPosition.z;
-        pyramid.position.y = -1.9; // On the board (same level as checkerboard plane)
+        puck.position.x = gridPosition.x;
+        puck.position.z = gridPosition.z;
+        puck.position.y = BOARD_Y_POSITION + PUCK_Y_OFFSET; // On the board, raised by half the puck height
         
         // Add to scene
-        this.scene.add(pyramid);
+        this.scene.add(puck);
         
         // Update matrix for raycasting
-        pyramid.updateMatrixWorld(true);
+        puck.updateMatrixWorld(true);
         
         // Create behavior for this piece
         const behavior = new CheckersPieceBehavior();
         
         // Store piece info
         this.pieces.push({
-            mesh: pyramid,
+            mesh: puck,
             gridPosition: { x: gridPosition.x, z: gridPosition.z },
             behavior,
             color,
@@ -204,7 +212,7 @@ export class CheckersManager {
             // Show selection indicator above the piece with color representing current player
             if (this.selectionIndicator) {
                 this.selectionIndicator.position.x = piece.mesh.position.x;
-                this.selectionIndicator.position.y = piece.mesh.position.y + 1.0;
+                this.selectionIndicator.position.y = piece.mesh.position.y + SELECTION_INDICATOR_HEIGHT_OFFSET;
                 this.selectionIndicator.position.z = piece.mesh.position.z;
                 
                 // Update indicator color based on current player's turn
