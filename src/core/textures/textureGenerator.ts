@@ -221,3 +221,174 @@ export function createCircularPuckTexture(): THREE.Texture {
     texture.wrapT = THREE.ClampToEdgeWrapping;
     return texture;
 }
+
+/**
+ * Create a blonde beachwood texture for light checkers pieces
+ */
+export function createBeachwoodTexture(): THREE.Texture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext('2d')!;
+    
+    // Base beachwood color - light blonde/tan
+    const gradient = context.createLinearGradient(0, 0, 512, 0);
+    gradient.addColorStop(0, '#f5deb3'); // Wheat color
+    gradient.addColorStop(0.5, '#ead5a7');
+    gradient.addColorStop(1, '#d4bc8e');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 512, 512);
+    
+    // Add wood grain - lighter, subtle lines
+    for (let i = 0; i < 40; i++) {
+        const y = Math.random() * 512;
+        const darkness = 0.05 + Math.random() * 0.1;
+        context.strokeStyle = `rgba(139, 115, 85, ${darkness})`;
+        context.lineWidth = 0.5 + Math.random() * 1;
+        
+        context.beginPath();
+        context.moveTo(0, y);
+        
+        // Wavy grain line
+        for (let x = 0; x <= 512; x += 8) {
+            const wave = Math.sin(x * 0.03 + Math.random() * 2) * 3;
+            context.lineTo(x, y + wave);
+        }
+        context.stroke();
+    }
+    
+    // Add growth rings for circular pattern (for top of puck)
+    const centerX = 256;
+    const centerY = 256;
+    for (let radius = 30; radius < 300; radius += 25 + Math.random() * 15) {
+        const opacity = 0.03 + Math.random() * 0.08;
+        context.strokeStyle = `rgba(160, 130, 90, ${opacity})`;
+        context.lineWidth = 1 + Math.random() * 2;
+        
+        context.beginPath();
+        // Irregular ellipse for natural wood rings
+        for (let angle = 0; angle <= Math.PI * 2; angle += 0.1) {
+            const waviness = Math.sin(angle * 5) * 8;
+            const r = radius + waviness + Math.random() * 5;
+            const x = centerX + Math.cos(angle) * r;
+            const y = centerY + Math.sin(angle) * r * 0.8; // Elliptical
+            
+            if (angle === 0) {
+                context.moveTo(x, y);
+            } else {
+                context.lineTo(x, y);
+            }
+        }
+        context.closePath();
+        context.stroke();
+    }
+    
+    // Add subtle texture noise
+    const imageData = context.getImageData(0, 0, 512, 512);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        const noise = (Math.random() - 0.5) * 8;
+        data[i] = Math.max(0, Math.min(255, data[i] + noise));
+        data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
+        data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
+    }
+    context.putImageData(imageData, 0, 0);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+}
+
+/**
+ * Create a dark ebony wood texture for dark checkers pieces
+ */
+export function createEbonyTexture(): THREE.Texture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext('2d')!;
+    
+    // Base ebony color - very dark brown/black
+    const gradient = context.createLinearGradient(0, 0, 512, 0);
+    gradient.addColorStop(0, '#1a0f0a'); // Very dark brown
+    gradient.addColorStop(0.5, '#2b1810');
+    gradient.addColorStop(1, '#0f0805');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 512, 512);
+    
+    // Add subtle wood grain - very dark lines
+    for (let i = 0; i < 35; i++) {
+        const y = Math.random() * 512;
+        const darkness = 0.15 + Math.random() * 0.2;
+        context.strokeStyle = `rgba(0, 0, 0, ${darkness})`;
+        context.lineWidth = 0.5 + Math.random() * 1.5;
+        
+        context.beginPath();
+        context.moveTo(0, y);
+        
+        // Wavy grain line
+        for (let x = 0; x <= 512; x += 8) {
+            const wave = Math.sin(x * 0.025 + Math.random() * 2) * 4;
+            context.lineTo(x, y + wave);
+        }
+        context.stroke();
+    }
+    
+    // Add very subtle lighter streaks for depth
+    for (let i = 0; i < 15; i++) {
+        const y = Math.random() * 512;
+        context.strokeStyle = `rgba(80, 50, 30, ${0.05 + Math.random() * 0.1})`;
+        context.lineWidth = 1 + Math.random() * 2;
+        
+        context.beginPath();
+        context.moveTo(0, y);
+        for (let x = 0; x <= 512; x += 10) {
+            const wave = Math.sin(x * 0.02) * 2;
+            context.lineTo(x, y + wave);
+        }
+        context.stroke();
+    }
+    
+    // Add growth rings for circular pattern (for top of puck)
+    const centerX = 256;
+    const centerY = 256;
+    for (let radius = 40; radius < 280; radius += 30 + Math.random() * 20) {
+        const opacity = 0.08 + Math.random() * 0.12;
+        context.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
+        context.lineWidth = 1 + Math.random() * 2;
+        
+        context.beginPath();
+        // Irregular ellipse for natural wood rings
+        for (let angle = 0; angle <= Math.PI * 2; angle += 0.1) {
+            const waviness = Math.sin(angle * 6) * 6;
+            const r = radius + waviness + Math.random() * 4;
+            const x = centerX + Math.cos(angle) * r;
+            const y = centerY + Math.sin(angle) * r * 0.85; // Elliptical
+            
+            if (angle === 0) {
+                context.moveTo(x, y);
+            } else {
+                context.lineTo(x, y);
+            }
+        }
+        context.closePath();
+        context.stroke();
+    }
+    
+    // Add subtle texture noise
+    const imageData = context.getImageData(0, 0, 512, 512);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        const noise = (Math.random() - 0.5) * 6;
+        data[i] = Math.max(0, Math.min(255, data[i] + noise));
+        data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
+        data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
+    }
+    context.putImageData(imageData, 0, 0);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+}

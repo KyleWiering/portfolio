@@ -110,31 +110,16 @@ export class CheckersManager {
      * Create a single checkers piece at the specified position
      */
     private createPiece(gridPosition: GridPosition, color: CheckersColor): void {
-        // Use brick texture for all pieces - now using hockey pucks
-        const puck = createHockeyPuck({ useTexture: true });
+        // Create hockey puck with wood texture - beachwood for white, ebony for black
+        const woodType = color === 'white' ? 'beachwood' : 'ebony';
+        const puck = createHockeyPuck({ useTexture: true, woodType });
         
         // Enable shadow casting and receiving
         puck.castShadow = true;
         puck.receiveShadow = true;
         
-        // Adjust material properties based on color
-        const material = puck.material as THREE.MeshStandardMaterial;
-        
-        // Set distinct colors for clear visibility - white pieces vs black pieces
-        // Pure solid colors with glossy finish for high contrast
-        if (color === 'black') {
-            material.color = new THREE.Color(0x000000); // Pure black
-            material.roughness = 0.25; // Glossy finish
-            material.metalness = 0.15; // Low metalness to preserve black color
-            material.emissive = new THREE.Color(0x000000);
-            material.emissiveIntensity = 0.0;
-        } else {
-            material.color = new THREE.Color(0xffffff); // Pure white
-            material.roughness = 0.25; // Glossy finish
-            material.metalness = 0.05; // Very low metalness to preserve white color
-            material.emissive = new THREE.Color(0xffffff); // Slight white glow
-            material.emissiveIntensity = 0.15; // Enhanced glow for better visibility
-        }
+        // Material properties are now set by the wood texture
+        // No need to override color as texture provides the appearance
         
         // Position the piece - gridPosition already contains final coordinates
         // No need to multiply by gridSpacing since positions are already in world units
