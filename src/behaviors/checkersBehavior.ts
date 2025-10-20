@@ -21,8 +21,7 @@ export class CheckersPieceBehavior implements ObjectBehavior {
     }
 
     animate(mesh: THREE.Mesh): void {
-        // Straight rotation animation on Y-axis only
-        mesh.rotation.y += 0.01;
+        // No rotation animation - pieces remain static
     }
 
     onSelect(mesh: THREE.Mesh, selected: boolean): void {

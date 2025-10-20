@@ -31,9 +31,13 @@ export class CheckersManager {
     private selectedPieceIndex: number = -1;
     private gridSpacing: number = 1;
     private selectionIndicator: THREE.Group | null = null;
-    private currentPlayer: CheckersColor = 'white'; // White goes first
+    private currentPlayer: CheckersColor = 'white'; // Current player
+    private startingPlayer: CheckersColor = 'white'; // Tracks who starts each game
     private validMovesIndicators: THREE.Mesh[] = [];
     private mustCaptureFrom: number[] = []; // Indices of pieces that must capture
+    private botEnabled: boolean = true; // Whether bot is enabled
+    private botColor: CheckersColor = 'black'; // Color the bot plays as
+    private botThinking: boolean = false; // Whether bot is currently thinking
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
@@ -58,6 +62,13 @@ export class CheckersManager {
     public initializeBoard(): void {
         // Remove any existing pieces
         this.removeAllPieces();
+        
+        // Switch starting player for next game
+        this.startingPlayer = this.startingPlayer === 'white' ? 'black' : 'white';
+        this.currentPlayer = this.startingPlayer;
+        
+        // Bot always plays the opposite color of the starting player
+        this.botColor = this.startingPlayer === 'white' ? 'black' : 'white';
 
         // Checkers board is 10x10
         // The board spans from -5 to 5 in both x and z directions (10 unit board, centered at origin)
@@ -430,45 +441,112 @@ export class CheckersManager {
         ];
 
         for (const dir of jumpDirections) {
-            const jumpOverPos = {
-                x: fromPos.x + dir.x,
-                z: fromPos.z + dir.z
-            };
-            const landingPos = {
-                x: fromPos.x + dir.x * 2,
-                z: fromPos.z + dir.z * 2
-            };
-
-            // Check if jump is valid
-            if (!this.isOnBoard(jumpOverPos) || !this.isOnBoard(landingPos)) {
-                continue;
-            }
-
-            const jumpOverPiece = this.getPieceAt(jumpOverPos);
-            const landingPiece = this.getPieceAt(landingPos);
-
-            // Must jump over an opponent piece to an empty square
-            if (jumpOverPiece && jumpOverPiece.color !== piece.color && !landingPiece) {
-                // Check if we haven't already captured this piece
-                const alreadyCaptured = capturedSoFar.some(p => 
-                    Math.abs(p.x - jumpOverPos.x) < 0.1 && Math.abs(p.z - jumpOverPos.z) < 0.1
-                );
-                
-                if (!alreadyCaptured) {
-                    const newCaptured = [...capturedSoFar, jumpOverPos];
+            if (piece.isKing) {
+                // Kings can jump from any distance
+                // Scan along diagonal to find opponent pieces to jump over
+                for (let distance = 1; distance <= 9; distance++) {
+                    const jumpOverPos = {
+                        x: fromPos.x + dir.x * distance,
+                        z: fromPos.z + dir.z * distance
+                    };
                     
-                    // Check for continued jumps
-                    const continuedJumps = this.getJumpMoves(piece, landingPos, newCaptured);
+                    if (!this.isOnBoard(jumpOverPos)) {
+                        break; // Out of bounds, stop checking this direction
+                    }
                     
-                    if (continuedJumps.length > 0) {
-                        // Add all continued jump sequences
-                        jumpMoves.push(...continuedJumps);
-                    } else {
-                        // This is a terminal jump
-                        jumpMoves.push({
-                            success: true,
-                            captured: newCaptured
-                        });
+                    const jumpOverPiece = this.getPieceAt(jumpOverPos);
+                    
+                    if (jumpOverPiece) {
+                        // Found a piece - check if it's an opponent
+                        if (jumpOverPiece.color !== piece.color) {
+                            // Check if we haven't already captured this piece
+                            const alreadyCaptured = capturedSoFar.some(p => 
+                                Math.abs(p.x - jumpOverPos.x) < 0.1 && Math.abs(p.z - jumpOverPos.z) < 0.1
+                            );
+                            
+                            if (!alreadyCaptured) {
+                                // Try all landing positions after this piece
+                                for (let landingDistance = distance + 1; landingDistance <= 9; landingDistance++) {
+                                    const landingPos = {
+                                        x: fromPos.x + dir.x * landingDistance,
+                                        z: fromPos.z + dir.z * landingDistance
+                                    };
+                                    
+                                    if (!this.isOnBoard(landingPos)) {
+                                        break; // Out of bounds
+                                    }
+                                    
+                                    const landingPiece = this.getPieceAt(landingPos);
+                                    
+                                    if (landingPiece) {
+                                        break; // Path blocked by another piece
+                                    }
+                                    
+                                    // Valid landing position found
+                                    const newCaptured = [...capturedSoFar, jumpOverPos];
+                                    
+                                    // Check for continued jumps from this landing position
+                                    const continuedJumps = this.getJumpMoves(piece, landingPos, newCaptured);
+                                    
+                                    if (continuedJumps.length > 0) {
+                                        // Add all continued jump sequences
+                                        jumpMoves.push(...continuedJumps);
+                                    } else {
+                                        // This is a terminal jump
+                                        jumpMoves.push({
+                                            success: true,
+                                            captured: newCaptured
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        // Stop checking this direction after finding a piece
+                        break;
+                    }
+                }
+            } else {
+                // Regular pieces: standard 2-square jump
+                const jumpOverPos = {
+                    x: fromPos.x + dir.x,
+                    z: fromPos.z + dir.z
+                };
+                const landingPos = {
+                    x: fromPos.x + dir.x * 2,
+                    z: fromPos.z + dir.z * 2
+                };
+
+                // Check if jump is valid
+                if (!this.isOnBoard(jumpOverPos) || !this.isOnBoard(landingPos)) {
+                    continue;
+                }
+
+                const jumpOverPiece = this.getPieceAt(jumpOverPos);
+                const landingPiece = this.getPieceAt(landingPos);
+
+                // Must jump over an opponent piece to an empty square
+                if (jumpOverPiece && jumpOverPiece.color !== piece.color && !landingPiece) {
+                    // Check if we haven't already captured this piece
+                    const alreadyCaptured = capturedSoFar.some(p => 
+                        Math.abs(p.x - jumpOverPos.x) < 0.1 && Math.abs(p.z - jumpOverPos.z) < 0.1
+                    );
+                    
+                    if (!alreadyCaptured) {
+                        const newCaptured = [...capturedSoFar, jumpOverPos];
+                        
+                        // Check for continued jumps
+                        const continuedJumps = this.getJumpMoves(piece, landingPos, newCaptured);
+                        
+                        if (continuedJumps.length > 0) {
+                            // Add all continued jump sequences
+                            jumpMoves.push(...continuedJumps);
+                        } else {
+                            // This is a terminal jump
+                            jumpMoves.push({
+                                success: true,
+                                captured: newCaptured
+                            });
+                        }
                     }
                 }
             }
@@ -510,21 +588,43 @@ export class CheckersManager {
         // Determine move type
         let result: MoveResult = { success: false };
 
-        // Check for jump move (distance ~2.83 for diagonal 2 squares)
-        if (distance > 2.5 && distance < 3) {
-            result = this.executeJumpMove(piece, targetPos);
+        // Check if this could be a jump move (any diagonal move with distance >= 2)
+        const absDx = Math.abs(dx);
+        const absDz = Math.abs(dz);
+        const isDiagonal = Math.abs(absDx - absDz) < 0.1;
+        
+        if (isDiagonal && distance >= 2.5) {
+            // Could be a jump - check if there's a piece to jump over
+            const stepX = dx / absDx;
+            const stepZ = dz / absDz;
+            let hasPieceToJump = false;
+            
+            for (let i = 1; i < absDx; i++) {
+                const checkPos = {
+                    x: piece.gridPosition.x + stepX * i,
+                    z: piece.gridPosition.z + stepZ * i
+                };
+                if (this.getPieceAt(checkPos)) {
+                    hasPieceToJump = true;
+                    break;
+                }
+            }
+            
+            if (hasPieceToJump) {
+                result = this.executeJumpMove(piece, targetPos);
+            } else if (piece.isKing && this.isValidKingMove(piece, targetPos)) {
+                // King moving long distance without jumping
+                result = this.executeKingMove(piece, targetPos);
+            } else if (!piece.hasMoved && distance > 2.5 && distance < 3) {
+                // 2-space first move (no jump)
+                result = this.executeRegularMove(piece, targetPos, 2);
+            } else {
+                return { success: false, message: "Invalid move" };
+            }
         }
         // Check for regular 1-space move (distance ~1.41 for diagonal)
         else if (distance > 1.2 && distance < 1.6) {
             result = this.executeRegularMove(piece, targetPos, 1);
-        }
-        // Check for 2-space first move (distance ~2.83 for diagonal 2 squares)
-        else if (!piece.hasMoved && distance > 2.5 && distance < 3) {
-            result = this.executeRegularMove(piece, targetPos, 2);
-        }
-        // Check for king long-distance move
-        else if (piece.isKing && this.isValidKingMove(piece, targetPos)) {
-            result = this.executeKingMove(piece, targetPos);
         }
         else {
             return { success: false, message: "Invalid move distance" };
@@ -666,19 +766,51 @@ export class CheckersManager {
         const dx = targetPos.x - piece.gridPosition.x;
         const dz = targetPos.z - piece.gridPosition.z;
         
-        // Must be exactly 2 squares diagonally
-        if (Math.abs(dx) !== 2 || Math.abs(dz) !== 2) {
+        // Must be diagonal
+        if (Math.abs(dx) !== Math.abs(dz)) {
+            return { success: false, message: "Jump must be diagonal" };
+        }
+        
+        const distance = Math.abs(dx);
+        
+        // Regular pieces must jump exactly 2 squares
+        if (!piece.isKing && distance !== 2) {
+            return { success: false, message: "Invalid jump distance" };
+        }
+        
+        // Kings can jump any diagonal distance, but must be at least 2
+        if (piece.isKing && distance < 2) {
             return { success: false, message: "Invalid jump distance" };
         }
 
-        const jumpOverPos = {
-            x: piece.gridPosition.x + dx / 2,
-            z: piece.gridPosition.z + dz / 2
-        };
-
-        const jumpOverPiece = this.getPieceAt(jumpOverPos);
+        // Find the piece being jumped over
+        const stepX = dx / distance;
+        const stepZ = dz / distance;
         
-        if (!jumpOverPiece) {
+        let jumpOverPiece: CheckersPiece | null = null;
+        let jumpOverPos: GridPosition | null = null;
+        
+        // Scan along the diagonal to find the opponent piece
+        // For kings, ensure we only jump over ONE piece
+        for (let i = 1; i < distance; i++) {
+            const checkPos = {
+                x: piece.gridPosition.x + stepX * i,
+                z: piece.gridPosition.z + stepZ * i
+            };
+            
+            const pieceAtPos = this.getPieceAt(checkPos);
+            
+            if (pieceAtPos) {
+                if (jumpOverPiece) {
+                    // Found a second piece - cannot jump over two pieces
+                    return { success: false, message: "Cannot jump over two pieces in one move" };
+                }
+                jumpOverPiece = pieceAtPos;
+                jumpOverPos = checkPos;
+            }
+        }
+        
+        if (!jumpOverPiece || !jumpOverPos) {
             return { success: false, message: "No piece to jump over" };
         }
 
@@ -821,5 +953,284 @@ export class CheckersManager {
         this.mustCaptureFrom = [];
         this.deselectPiece();
         this.checkForForcedCaptures();
+    }
+
+    /**
+     * Check if it's the bot's turn and bot is enabled
+     */
+    public isBotTurn(): boolean {
+        return this.botEnabled && this.currentPlayer === this.botColor && !this.botThinking;
+    }
+
+    /**
+     * Get bot color
+     */
+    public getBotColor(): CheckersColor {
+        return this.botColor;
+    }
+
+    /**
+     * Make bot move
+     */
+    public async makeBotMove(): Promise<void> {
+        if (!this.isBotTurn()) {
+            return;
+        }
+
+        this.botThinking = true;
+
+        // Add a small delay to make it feel more natural
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Get all possible moves for bot's pieces
+        const botPieces = this.pieces
+            .map((piece, index) => ({ piece, index }))
+            .filter(({ piece }) => piece.color === this.botColor);
+
+        // Prioritize pieces with captures
+        const piecesWithCaptures = botPieces.filter(({ piece }) => this.canCapture(piece));
+        const piecesToConsider = piecesWithCaptures.length > 0 ? piecesWithCaptures : botPieces;
+
+        // Collect all valid moves
+        interface BotMove {
+            pieceIndex: number;
+            targetPos: GridPosition;
+            captureCount: number;
+            becomesKing: boolean;
+            moveScore: number;
+        }
+
+        const allMoves: BotMove[] = [];
+
+        for (const { piece, index } of piecesToConsider) {
+            const moves = this.getValidMovesForPiece(piece);
+            
+            for (const move of moves) {
+                const captureCount = move.captured ? move.captured.length : 0;
+                const becomesKing = this.wouldBecomeKing(piece, move.targetPos);
+                
+                // Calculate move score (higher is better)
+                let moveScore = 0;
+                moveScore += captureCount * 10; // Prioritize captures
+                moveScore += becomesKing ? 5 : 0; // Prioritize king promotion
+                moveScore += piece.isKing ? 1 : 0; // Slight preference for moving kings
+                moveScore += Math.random() * 2; // Add randomness
+                
+                allMoves.push({
+                    pieceIndex: index,
+                    targetPos: move.targetPos,
+                    captureCount,
+                    becomesKing,
+                    moveScore
+                });
+            }
+        }
+
+        if (allMoves.length === 0) {
+            // No valid moves - skip turn
+            this.botThinking = false;
+            this.skipTurn();
+            return;
+        }
+
+        // Sort by score and pick the best move
+        allMoves.sort((a, b) => b.moveScore - a.moveScore);
+        const bestMove = allMoves[0];
+
+        // Execute the move
+        this.selectPieceByIndex(bestMove.pieceIndex);
+        
+        // Add a small delay before moving
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const result = this.movePiece(bestMove.targetPos);
+        
+        this.botThinking = false;
+
+        // If multi-jump is possible, continue with another bot move
+        if (result.success && result.captured && result.captured.length > 0 && this.canCapture(this.pieces[this.selectedPieceIndex])) {
+            // Bot can continue jumping - make another move after a delay
+            setTimeout(() => this.makeBotMove(), 500);
+        }
+    }
+
+    /**
+     * Get all valid moves for a specific piece with target positions
+     */
+    private getValidMovesForPiece(piece: CheckersPiece): Array<{ targetPos: GridPosition; captured?: GridPosition[] }> {
+        const moves: Array<{ targetPos: GridPosition; captured?: GridPosition[] }> = [];
+        const directions = this.getMovementDirections(piece);
+
+        // Check regular moves
+        if (!this.hasAvailableJumps(piece.color)) {
+            if (piece.isKing) {
+                // Kings can move any number of spaces diagonally
+                for (const dir of directions) {
+                    for (let distance = 1; distance <= 9; distance++) {
+                        const targetPos = {
+                            x: piece.gridPosition.x + dir.x * distance,
+                            z: piece.gridPosition.z + dir.z * distance
+                        };
+                        
+                        if (!this.isOnBoard(targetPos)) break;
+                        if (this.getPieceAt(targetPos)) break;
+                        
+                        moves.push({ targetPos });
+                    }
+                }
+            } else {
+                // Regular pieces: 1 or 2 spaces forward
+                for (const dir of directions) {
+                    if (this.isForwardMove(piece, dir)) {
+                        const oneSpace = {
+                            x: piece.gridPosition.x + dir.x,
+                            z: piece.gridPosition.z + dir.z
+                        };
+                        
+                        if (this.isOnBoard(oneSpace) && !this.getPieceAt(oneSpace)) {
+                            moves.push({ targetPos: oneSpace });
+                        }
+
+                        // 2-space move if first move
+                        if (!piece.hasMoved) {
+                            const twoSpace = {
+                                x: piece.gridPosition.x + dir.x * 2,
+                                z: piece.gridPosition.z + dir.z * 2
+                            };
+                            const midPoint = {
+                                x: piece.gridPosition.x + dir.x,
+                                z: piece.gridPosition.z + dir.z
+                            };
+                            
+                            if (this.isOnBoard(twoSpace) && !this.getPieceAt(twoSpace) && !this.getPieceAt(midPoint)) {
+                                moves.push({ targetPos: twoSpace });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check jump moves
+        const jumpMoves = this.getJumpMovesWithPositions(piece, piece.gridPosition, []);
+        moves.push(...jumpMoves);
+
+        return moves;
+    }
+
+    /**
+     * Get jump moves with target positions (helper for bot)
+     */
+    private getJumpMovesWithPositions(
+        piece: CheckersPiece,
+        fromPos: GridPosition,
+        capturedSoFar: GridPosition[]
+    ): Array<{ targetPos: GridPosition; captured: GridPosition[] }> {
+        const jumpMoves: Array<{ targetPos: GridPosition; captured: GridPosition[] }> = [];
+        
+        const jumpDirections = [
+            { x: 1, z: 1 },
+            { x: -1, z: 1 },
+            { x: 1, z: -1 },
+            { x: -1, z: -1 }
+        ];
+
+        for (const dir of jumpDirections) {
+            if (piece.isKing) {
+                // Kings can jump from any distance
+                for (let distance = 1; distance <= 9; distance++) {
+                    const jumpOverPos = {
+                        x: fromPos.x + dir.x * distance,
+                        z: fromPos.z + dir.z * distance
+                    };
+                    
+                    if (!this.isOnBoard(jumpOverPos)) break;
+                    
+                    const jumpOverPiece = this.getPieceAt(jumpOverPos);
+                    
+                    if (jumpOverPiece) {
+                        if (jumpOverPiece.color !== piece.color) {
+                            const alreadyCaptured = capturedSoFar.some(p => 
+                                Math.abs(p.x - jumpOverPos.x) < 0.1 && Math.abs(p.z - jumpOverPos.z) < 0.1
+                            );
+                            
+                            if (!alreadyCaptured) {
+                                for (let landingDistance = distance + 1; landingDistance <= 9; landingDistance++) {
+                                    const landingPos = {
+                                        x: fromPos.x + dir.x * landingDistance,
+                                        z: fromPos.z + dir.z * landingDistance
+                                    };
+                                    
+                                    if (!this.isOnBoard(landingPos)) break;
+                                    if (this.getPieceAt(landingPos)) break;
+                                    
+                                    const newCaptured = [...capturedSoFar, jumpOverPos];
+                                    const continuedJumps = this.getJumpMovesWithPositions(piece, landingPos, newCaptured);
+                                    
+                                    if (continuedJumps.length > 0) {
+                                        jumpMoves.push(...continuedJumps);
+                                    } else {
+                                        jumpMoves.push({
+                                            targetPos: landingPos,
+                                            captured: newCaptured
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else {
+                // Regular pieces: standard 2-square jump
+                const jumpOverPos = {
+                    x: fromPos.x + dir.x,
+                    z: fromPos.z + dir.z
+                };
+                const landingPos = {
+                    x: fromPos.x + dir.x * 2,
+                    z: fromPos.z + dir.z * 2
+                };
+
+                if (!this.isOnBoard(jumpOverPos) || !this.isOnBoard(landingPos)) continue;
+
+                const jumpOverPiece = this.getPieceAt(jumpOverPos);
+                const landingPiece = this.getPieceAt(landingPos);
+
+                if (jumpOverPiece && jumpOverPiece.color !== piece.color && !landingPiece) {
+                    const alreadyCaptured = capturedSoFar.some(p => 
+                        Math.abs(p.x - jumpOverPos.x) < 0.1 && Math.abs(p.z - jumpOverPos.z) < 0.1
+                    );
+                    
+                    if (!alreadyCaptured) {
+                        const newCaptured = [...capturedSoFar, jumpOverPos];
+                        const continuedJumps = this.getJumpMovesWithPositions(piece, landingPos, newCaptured);
+                        
+                        if (continuedJumps.length > 0) {
+                            jumpMoves.push(...continuedJumps);
+                        } else {
+                            jumpMoves.push({
+                                targetPos: landingPos,
+                                captured: newCaptured
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return jumpMoves;
+    }
+
+    /**
+     * Check if a piece would become a king at a position
+     */
+    private wouldBecomeKing(piece: CheckersPiece, pos: GridPosition): boolean {
+        if (piece.isKing) return false;
+        
+        if (piece.color === 'black' && pos.z >= BOARD_MAX) return true;
+        if (piece.color === 'white' && pos.z <= BOARD_MIN) return true;
+        
+        return false;
     }
 }

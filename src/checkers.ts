@@ -241,7 +241,11 @@ function initCheckers(): void {
         if (currentState.statusMessage !== previousState.statusMessage) {
             const currentPlayerElement = document.getElementById('current-player');
             if (currentPlayerElement) {
-                currentPlayerElement.innerHTML = `• Current: <strong>${currentState.statusMessage}</strong>`;
+                const botColor = checkersManager.getBotColor();
+                const currentPlayer = checkersManager.getCurrentPlayer();
+                const isBot = currentPlayer === botColor;
+                const playerLabel = isBot ? `${currentState.statusMessage} (Bot)` : currentState.statusMessage;
+                currentPlayerElement.innerHTML = `• Current: <strong>${playerLabel}</strong>`;
             }
         }
 
@@ -277,6 +281,11 @@ function initCheckers(): void {
         }
 
         previousState = currentState;
+        
+        // Trigger bot move if it's bot's turn
+        if (checkersManager.isBotTurn()) {
+            checkersManager.makeBotMove();
+        }
     }
 
     // Initial HUD update
