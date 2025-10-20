@@ -580,15 +580,18 @@ export class CheckersRenderer {
         
         const boardSize = BOARD_SIZE;
         const totalBoardWidth = boardSize + BORDER_WIDTH * 2;
-        const wallHeight = 1.5; // Solid wall height
+        // Wall height should match the water depth to line up with the outer edge
+        const wallHeight = WATER_POOL_DEPTH; // Match water depth (1.0)
         const wallThickness = 0.3; // Wall thickness
+        // Position walls at the water level
+        const wallYPosition = GRID_Y_POSITION - WATER_POOL_DEPTH + wallHeight / 2;
         
         // Top wall
         const topWall = new THREE.Mesh(
             new THREE.BoxGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, wallHeight, wallThickness),
             wallMaterial
         );
-        topWall.position.set(0, GRID_Y_POSITION + wallHeight / 2, -poolEnd);
+        topWall.position.set(0, wallYPosition, -poolEnd);
         topWall.castShadow = true;
         topWall.receiveShadow = true;
         poolGroup.add(topWall);
@@ -598,7 +601,7 @@ export class CheckersRenderer {
             new THREE.BoxGeometry(totalBoardWidth + WATER_POOL_WIDTH * 2, wallHeight, wallThickness),
             wallMaterial
         );
-        bottomWall.position.set(0, GRID_Y_POSITION + wallHeight / 2, poolEnd);
+        bottomWall.position.set(0, wallYPosition, poolEnd);
         bottomWall.castShadow = true;
         bottomWall.receiveShadow = true;
         poolGroup.add(bottomWall);
@@ -608,7 +611,7 @@ export class CheckersRenderer {
             new THREE.BoxGeometry(wallThickness, wallHeight, totalBoardWidth + WATER_POOL_WIDTH * 2),
             wallMaterial
         );
-        leftWall.position.set(-poolEnd, GRID_Y_POSITION + wallHeight / 2, 0);
+        leftWall.position.set(-poolEnd, wallYPosition, 0);
         leftWall.castShadow = true;
         leftWall.receiveShadow = true;
         poolGroup.add(leftWall);
@@ -618,7 +621,7 @@ export class CheckersRenderer {
             new THREE.BoxGeometry(wallThickness, wallHeight, totalBoardWidth + WATER_POOL_WIDTH * 2),
             wallMaterial
         );
-        rightWall.position.set(poolEnd, GRID_Y_POSITION + wallHeight / 2, 0);
+        rightWall.position.set(poolEnd, wallYPosition, 0);
         rightWall.castShadow = true;
         rightWall.receiveShadow = true;
         poolGroup.add(rightWall);
