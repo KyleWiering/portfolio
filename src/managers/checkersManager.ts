@@ -63,12 +63,12 @@ export class CheckersManager {
         // Remove any existing pieces
         this.removeAllPieces();
         
-        // Switch starting player for next game
-        this.startingPlayer = this.startingPlayer === 'white' ? 'black' : 'white';
-        this.currentPlayer = this.startingPlayer;
+        // Bot always plays black pieces
+        this.botColor = 'black';
         
-        // Bot always plays the opposite color of the starting player
-        this.botColor = this.startingPlayer === 'white' ? 'black' : 'white';
+        // White always starts
+        this.startingPlayer = 'white';
+        this.currentPlayer = this.startingPlayer;
 
         // Checkers board is 10x10
         // The board spans from -5 to 5 in both x and z directions (10 unit board, centered at origin)
