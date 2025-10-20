@@ -124,12 +124,12 @@ function initCheckers(): void {
             <div class="control-section">
                 <h5>📋 Rules</h5>
                 <p>• Move diagonally forward 1 space</p>
-                <p>• First move can be 1 or 2 spaces</p>
                 <p>• Must jump opponent when possible</p>
                 <p>• Capture by jumping over opponent</p>
                 <p>• Multi-jumps allowed</p>
                 <p>• Reach opposite side to become King</p>
                 <p>• Kings move backward and forward</p>
+                <p>• <a href="https://nl.m.wikipedia.org/wiki/Dammen" target="_blank" rel="noopener noreferrer" style="color: #93c5fd; text-decoration: underline;">Learn more about Dammen rules</a></p>
             </div>
             <div class="control-section">
                 <h5>ℹ️ Board Setup</h5>
