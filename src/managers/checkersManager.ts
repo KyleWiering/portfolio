@@ -346,7 +346,7 @@ export class CheckersManager {
                 }
             }
         } else {
-            // Regular pieces: Check regular moves (1 or 2 spaces forward)
+            // Regular pieces: Check regular moves (1 space forward)
             for (const dir of directions) {
                 // Check 1 space move
                 const oneSpace = {
@@ -357,23 +357,6 @@ export class CheckersManager {
                 if (this.isOnBoard(oneSpace) && !this.getPieceAt(oneSpace)) {
                     // Only allow forward movement, not backward
                     if (this.isForwardMove(piece, dir)) {
-                        validMoves.push({ success: true });
-                    }
-                }
-
-                // Check 2 space move (only if never moved before)
-                if (!piece.hasMoved) {
-                    const twoSpace = {
-                        x: piece.gridPosition.x + dir.x * 2,
-                        z: piece.gridPosition.z + dir.z * 2
-                    };
-                    const midPoint = {
-                        x: piece.gridPosition.x + dir.x,
-                        z: piece.gridPosition.z + dir.z
-                    };
-                    
-                    if (this.isOnBoard(twoSpace) && !this.getPieceAt(twoSpace) && 
-                        !this.getPieceAt(midPoint) && this.isForwardMove(piece, dir)) {
                         validMoves.push({ success: true });
                     }
                 }
@@ -615,9 +598,6 @@ export class CheckersManager {
             } else if (piece.isKing && this.isValidKingMove(piece, targetPos)) {
                 // King moving long distance without jumping
                 result = this.executeKingMove(piece, targetPos);
-            } else if (!piece.hasMoved && distance > 2.5 && distance < 3) {
-                // 2-space first move (no jump)
-                result = this.executeRegularMove(piece, targetPos, 2);
             } else {
                 return { success: false, message: "Invalid move" };
             }
@@ -687,17 +667,6 @@ export class CheckersManager {
         // Check if move is forward
         if (!piece.isKing && !this.isForwardMove(piece, { x: dx, z: dz })) {
             return { success: false, message: "Regular pieces can only move forward" };
-        }
-
-        // Check intermediate squares are empty (for 2-space move)
-        if (spaces === 2) {
-            const midPoint = {
-                x: piece.gridPosition.x + dx,
-                z: piece.gridPosition.z + dz
-            };
-            if (this.getPieceAt(midPoint)) {
-                return { success: false, message: "Path is blocked" };
-            }
         }
 
         // Move the piece
@@ -1079,7 +1048,7 @@ export class CheckersManager {
                     }
                 }
             } else {
-                // Regular pieces: 1 or 2 spaces forward
+                // Regular pieces: 1 space forward
                 for (const dir of directions) {
                     if (this.isForwardMove(piece, dir)) {
                         const oneSpace = {
@@ -1089,22 +1058,6 @@ export class CheckersManager {
                         
                         if (this.isOnBoard(oneSpace) && !this.getPieceAt(oneSpace)) {
                             moves.push({ targetPos: oneSpace });
-                        }
-
-                        // 2-space move if first move
-                        if (!piece.hasMoved) {
-                            const twoSpace = {
-                                x: piece.gridPosition.x + dir.x * 2,
-                                z: piece.gridPosition.z + dir.z * 2
-                            };
-                            const midPoint = {
-                                x: piece.gridPosition.x + dir.x,
-                                z: piece.gridPosition.z + dir.z
-                            };
-                            
-                            if (this.isOnBoard(twoSpace) && !this.getPieceAt(twoSpace) && !this.getPieceAt(midPoint)) {
-                                moves.push({ targetPos: twoSpace });
-                            }
                         }
                     }
                 }
