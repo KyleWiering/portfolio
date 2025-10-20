@@ -195,9 +195,9 @@ export class CheckersRenderer {
         const border = this.createWoodBorder();
         this.scene.add(border);
         
-        // Add grassy field up to the horizon
-        const grassyField = this.createGrassyField();
-        this.scene.add(grassyField);
+        // Grassy field hidden to show black background
+        // const grassyField = this.createGrassyField();
+        // this.scene.add(grassyField);
         
         // Add water pool around the board edges with waterfalls
         const waterPool = this.createWaterPool();
@@ -221,22 +221,8 @@ export class CheckersRenderer {
      * Create sky gradient background (cloud-free sky from horizon up)
      */
     private createSkyGradient(): void {
-        // Create a canvas for the sky gradient
-        const canvas = document.createElement('canvas');
-        canvas.width = 2;
-        canvas.height = 256;
-        const context = canvas.getContext('2d')!;
-        
-        // Create gradient from horizon (light blue) to top (darker blue)
-        const gradient = context.createLinearGradient(0, 0, 0, 256);
-        gradient.addColorStop(0, '#87CEEB'); // Sky blue at horizon
-        gradient.addColorStop(1, '#4A90E2'); // Deeper blue at top
-        
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, 2, 256);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        this.scene.background = texture;
+        // Set the background to black for a classic checkers board appearance
+        this.scene.background = new THREE.Color(0x000000);
     }
 
     /**
