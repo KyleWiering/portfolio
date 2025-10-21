@@ -6,6 +6,12 @@ What started as a simple portfolio website evolved into a fully-featured 3D game
 
 This is the story of modern development: AI-assisted prompts, iterative refinement, and the power of mobile-first workflows.
 
+## The Inspiration: A Childhood Memory
+
+One of my earliest memories is sitting across from my dad, learning to play dammen (Dutch Checkers). The strategic depth of the game, the satisfying click of wooden pieces on the board, and the time spent together left a lasting impression. Years later, as I explored what modern AI-assisted development could achieve, recreating that experience as a 3D web game felt like the perfect project.
+
+What made this journey particularly meaningful was that it didn't require significant time away from my family. The development process fit into the margins of daily life - a few minutes here and there to check how the game was playing, write prompts to fix bugs or add features, and review the AI-generated code. The most rigorous part wasn't writing code or debugging complex issues; it was the iterative process of continuously asking AI to complete each operation, reviewing the results, and guiding the next step. This mobile-first, AI-powered workflow meant I could build something substantial without sacrificing family time.
+
 
 ## The Power of AI-Assisted Development from Mobile
 
@@ -64,7 +70,7 @@ The complete source code and all 31 PRs are available in the [KyleWiering/portfo
 
 ---
 
-## Phase 1: Foundation (PRs #5)
+## Phase 1: Foundation (PRs #6)
 
 ### [PR #6: Add 3D browser game with spinning cube loader using Three.js](https://github.com/KyleWiering/portfolio/pull/6)
 **Prompt:** *"Create a basic page with a loader for a 3D browser game. This page should include a spinning cube as the main object and should be a compiled application intended for a single-page application (SPA)."*
