@@ -6,27 +6,65 @@ What started as a simple portfolio website evolved into a fully-featured 3D game
 
 This is the story of modern development: AI-assisted prompts, iterative refinement, and the power of mobile-first workflows.
 
+
+## The Power of AI-Assisted Development from Mobile
+
+### By the Numbers
+- **31 Pull Requests** from #4 through #32 (excluding open PR #3)
+- **100% Mobile Development** - Every prompt, every review, every merge done on iPhone 13 Pro Max
+- **Tools Used:** GitHub mobile app + Microsoft Edge browser
+- **AI Partner:** GitHub Copilot coding agent
+- **Architecture:** Modular TypeScript with Three.js, compiled with esbuild
+- **Final Features:**
+  - Full 3D WebGL game engine
+  - Authentic Dutch Checkers (Dammen) rules
+  - AI bot opponent with move evaluation
+  - Touch and mouse controls
+  - Camera panning and zoom
+  - Realistic textures (wood, water, stone)
+  - Complete environmental graphics
+  - Mobile-responsive UI
+
+### The Journey
+
+What started as an idea evolved through model viewers, touch controls, and modular architecture into a complete 3D game. Each PR built on the previous, guided by natural language prompts and AI-generated code. The development process was iterative - bugs were caught and fixed, features were refined, and the codebase was continuously refactored for better maintainability.
+
+### The Mobile Workflow
+
+Every single interaction happened on mobile:
+- Typed prompts in GitHub mobile app
+- Reviewed AI-generated code in Microsoft Edge
+- Approved and merged PRs from phone
+- Tested the deployed game in mobile browser
+- Created issues and provided feedback - all from the same device
+
+This wasn't a proof of concept - this was real development, producing production-quality code, entirely from mobile. No laptop required.
+
+### The AI Advantage
+
+GitHub Copilot didn't just write code - it understood context, maintained consistency across 31 PRs, and made intelligent architectural decisions. From implementing raycasting for touch selection to creating procedural textures for wood grain, the AI consistently produced functional, well-structured code.
+
+The prompts evolved too. Early PRs had detailed specifications. Later PRs could say "fix these 5 bugs" and Copilot would diagnose, implement, and document the solutions.
+
+### Modern Development
+
+This project demonstrates what's possible with modern development tools:
+- AI can handle simple game logic and 3D graphics
+- Mobile devices are legitimate development platforms
+- Natural language is a powerful programming interface
+- Iterative refinement through PRs produces quality results
+
+The future of development isn't about replacing developers - it's about augmenting them. With AI handling implementation details, developers can focus on creative vision, architectural decisions, and user experience.
+
+### Play the Game
+
+Experience the result of this journey: [Dammen (Dutch Checkers)](https://kylewiering.github.io/portfolio/checkers.html)
+
+The complete source code and all 31 PRs are available in the [KyleWiering/portfolio](https://github.com/KyleWiering/portfolio) repository.
+
 ---
 
-## Phase 1: Foundation (PRs #4-6)
-
-### [PR #4: Fix CSS rendering on GitHub Pages](https://github.com/KyleWiering/portfolio/pull/4)
-**Prompt:** *"Fix the CSS rendering issue on GitHub Pages. The page displays as unstyled HTML because the styles.css file is returning a 404 error."*
-
-**What happened:** The deployment workflow was only copying `index.html` to the `dist/` directory but not `styles.css`. Modified `.github/workflows/deploy.yml` to copy both files, updated resource paths for GitHub Pages compatibility, and added comprehensive deployment documentation.
-
-**Key accomplishment:** Portfolio now renders correctly with proper styling on GitHub Pages.
-
----
-
-### [PR #5: Add professional resume page with download link](https://github.com/KyleWiering/portfolio/pull/5)
-**Prompt:** *Not provided (manually created)*
-
-**What happened:** Transformed the portfolio from a generic template into a personalized site featuring a complete professional resume page with download functionality, comprehensive work history, and clean navigation between pages.
-
-**Key accomplishment:** Portfolio personalized with Kyle Wiering's professional information and resume.
-
----
+## Phase 1: Foundation (PRs #5)
 
 ### [PR #6: Add 3D browser game with spinning cube loader using Three.js](https://github.com/KyleWiering/portfolio/pull/6)
 **Prompt:** *"Create a basic page with a loader for a 3D browser game. This page should include a spinning cube as the main object and should be a compiled application intended for a single-page application (SPA)."*
@@ -37,7 +75,7 @@ This is the story of modern development: AI-assisted prompts, iterative refineme
 
 ---
 
-## Phase 2: Model Viewer Evolution (PRs #7-12)
+## Phase 2: Model Viewer Evolution (PRs 7-12)
 
 ### [PR #7: Update 3D browser application to model viewer](https://github.com/KyleWiering/portfolio/pull/7)
 **Prompt:** *"Update the existing 3D browser application to function as a 'model viewer' instead of a game. The viewer should include the ability to display three models: a pyramid, a cube, and a sphere."*
@@ -283,61 +321,8 @@ This is the story of modern development: AI-assisted prompts, iterative refineme
 
 ---
 
-## Conclusion: The Power of AI-Assisted Development from Mobile
-
-### By the Numbers
-- **31 Pull Requests** from #4 through #32 (excluding open PR #3)
-- **100% Mobile Development** - Every prompt, every review, every merge done on iPhone 13 Pro Max
-- **Tools Used:** GitHub mobile app + Microsoft Edge browser
-- **AI Partner:** GitHub Copilot coding agent
-- **Architecture:** Modular TypeScript with Three.js, compiled with esbuild
-- **Final Features:**
-  - Full 3D WebGL game engine
-  - Authentic Dutch Checkers (Dammen) rules
-  - AI bot opponent with move evaluation
-  - Touch and mouse controls
-  - Camera panning and zoom
-  - Realistic textures (wood, water, stone)
-  - Complete environmental graphics
-  - Mobile-responsive UI
-
-### The Journey
-
-What started as "fix the CSS" evolved through model viewers, touch controls, and modular architecture into a complete 3D game. Each PR built on the previous, guided by natural language prompts and AI-generated code. The development process was iterative - bugs were caught and fixed, features were refined, and the codebase was continuously refactored for better maintainability.
-
-### The Mobile Workflow
-
-Every single interaction happened on mobile:
-- Typed prompts in GitHub mobile app
-- Reviewed AI-generated code in Microsoft Edge
-- Approved and merged PRs from phone
-- Tested the deployed game in mobile browser
-- Created issues and provided feedback - all from the same device
-
-This wasn't a proof of concept - this was real development, producing production-quality code, entirely from mobile. No laptop required.
-
-### The AI Advantage
-
-GitHub Copilot didn't just write code - it understood context, maintained consistency across 31 PRs, and made intelligent architectural decisions. From implementing raycasting for touch selection to creating procedural textures for wood grain, the AI consistently produced functional, well-structured code.
-
-The prompts evolved too. Early PRs had detailed specifications. Later PRs could say "fix these 5 bugs" and Copilot would diagnose, implement, and document the solutions.
-
-### Modern Development
-
-This project demonstrates what's possible with modern development tools:
-- AI can handle complex game logic and 3D graphics
-- Mobile devices are legitimate development platforms
-- Natural language is a powerful programming interface
-- Iterative refinement through PRs produces quality results
-
-The future of development isn't about replacing developers - it's about augmenting them. With AI handling implementation details, developers can focus on creative vision, architectural decisions, and user experience.
-
-### Play the Game
-
-Experience the result of this journey: [Dammen (Dutch Checkers)](https://kylewiering.github.io/portfolio/checkers.html)
-
-The complete source code and all 31 PRs are available in the [KyleWiering/portfolio](https://github.com/KyleWiering/portfolio) repository.
+*Built with ❤️, AI, and an iPhone 13 Pro Max*
 
 ---
 
-*Built with ❤️, AI, and an iPhone 13 Pro Max*
+
