@@ -1,8 +1,8 @@
-# Building Dammen: A 3D Dutch Checkers Game Through 31 AI-Powered Pull Requests
+# Building Dammen: A 3D Dutch Checkers Game Through 29 AI-Powered Pull Requests
 
-## From Zero to Game in 31 PRs - All From an iPhone 13 Pro Max
+## From Zero to Game in 29 PRs - All From an iPhone 13 Pro Max
 
-What started as a simple portfolio website evolved into a fully-featured 3D game - and I built it entirely on my phone. Using nothing but the GitHub mobile app and Microsoft Edge on my iPhone 13 Pro Max, I leveraged AI and GitHub Copilot to transform a concept into a complete Dutch Checkers (Dammen) game through 31 pull requests.
+What started as a simple portfolio website evolved into a fully-featured 3D game - and I built it entirely on my phone. Using nothing but the GitHub mobile app and Microsoft Edge on my iPhone 13 Pro Max, I leveraged AI and GitHub Copilot to transform a concept into a complete Dutch Checkers (Dammen) game through 29 pull requests.
 
 This is the story of modern development: AI-assisted prompts, iterative refinement, and the power of mobile-first workflows.
 
